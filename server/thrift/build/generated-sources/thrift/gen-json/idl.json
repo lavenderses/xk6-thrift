@@ -1,0 +1,38 @@
+{
+  "name": "idl",
+  "namespaces": {
+    "java": "idl"
+  },
+  "includes": [
+  ],
+  "enums": [
+  ],
+  "typedefs": [
+  ],
+  "structs": [
+  ],
+  "constants": [
+  ],
+  "services": [
+    {
+      "name": "TestService",
+      "functions": [
+        {
+          "name": "simpleCall",
+          "returnTypeId": "string",
+          "oneway": false,
+          "arguments": [
+            {
+              "key": 1,
+              "name": "id",
+              "typeId": "string",
+              "required": "req_out"
+            }
+          ],
+          "exceptions": [
+          ]
+        }
+      ]
+    }
+  ]
+}
