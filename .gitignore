@@ -1,1 +1,5 @@
 k6
+
+.gradle
+/server/**/build/*
+!/server/thrift/build/generated-sources
