@@ -6,5 +6,5 @@ export const options = {
 }
 
 export default function() {
-  thrift.echo("World");
+  thrift.echo();
 }
