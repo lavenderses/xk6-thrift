@@ -1,1 +1,1 @@
-/home/nakanoi/projects/xk6-thrift/idl/idl.thrift
+../../../../../idl/idl.thrift
