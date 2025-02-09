@@ -5,6 +5,7 @@ go 1.23.6
 require go.k6.io/k6 v0.56.0
 
 require (
+	github.com/apache/thrift v0.21.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/evanw/esbuild v0.21.2 // indirect
