@@ -36,7 +36,7 @@ jobs:
 
       - name: wait server gets ready
         timeout-minutes: 5
-        run:
+        run: |
           res=$(curl 127.0.0.1:8080/health)
           while [ "$res" != "OK" ]; do
             echo "NOT YET. SLEEP"
