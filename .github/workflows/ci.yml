@@ -41,7 +41,7 @@ jobs:
           while [ "$res" != "OK" ]; do
             echo "NOT YET. SLEEP"
             sleep 5
-            res=$(curl 127.0.0.1:8080/health)
+            res=$(curl 127.0.0.1:8080/health || echo "NG")
           done
 
 
