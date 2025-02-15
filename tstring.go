@@ -15,6 +15,14 @@ func NewTstring(v string) TString {
 	return TString{value: v}
 }
 
+func (p TString) Equals(other *TValue) bool {
+	o, ok := (*other).(TString)
+	if !ok {
+		return false
+	}
+	return p.value == o.value
+}
+
 func (p *TString) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)

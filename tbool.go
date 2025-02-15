@@ -15,6 +15,14 @@ func NewTBool(v bool) TBool {
 	return TBool{value: v}
 }
 
+func (p TBool) Equals(other *TValue) bool {
+	o, ok := (*other).(TBool)
+	if !ok {
+		return false
+	}
+	return p.value == o.value
+}
+
 func (p *TBool) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)

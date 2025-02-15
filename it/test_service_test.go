@@ -3,6 +3,7 @@ package it
 import (
 	"context"
 	"log/slog"
+	"reflect"
 	"testing"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -56,15 +57,16 @@ func TestSimpleCall(t *testing.T) {
 	cxt := context.Background()
 	method := "simpleCall"
 	arg := xk6_thrift.NewTstring("ID")
-	expect := xk6_thrift.NewTstring("Success: ID")
-	actual := xk6_thrift.TString{}
+	expect := xk6_thrift.NewTResponse()
+	expect.Add(0, xk6_thrift.NewTstring("Success: ID"))
+	actual := xk6_thrift.NewTResponse()
 
 	// do & verify
-	if _, err = (*client).Call(cxt, method, &arg, &actual); err != nil {
+	if _, err = (*client).Call(cxt, method, &arg, actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
 
-	if actual != expect {
+	if !reflect.DeepEqual(actual.Values(), expect.Values()) {
 		t.Errorf("expected %v, but was %v", expect, actual)
 	}
 }
@@ -80,15 +82,16 @@ func TestBoolCall(t *testing.T) {
 	cxt := context.Background()
 	method := "boolCall"
 	arg := xk6_thrift.NewTBool(true)
-	expect := xk6_thrift.NewTBool(true)
-	actual := xk6_thrift.TBool{}
+	expect := xk6_thrift.NewTResponse()
+	expect.Add(0, xk6_thrift.NewTBool(true))
+	actual := xk6_thrift.NewTResponse()
 
 	// do & verify
-	if _, err = (*client).Call(cxt, method, &arg, &actual); err != nil {
+	if _, err = (*client).Call(cxt, method, &arg, actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
 
-	if actual != expect {
+	if !reflect.DeepEqual(actual.Values(), expect.Values()) {
 		t.Errorf("expected %v, but was %v", expect, actual)
 	}
 }
