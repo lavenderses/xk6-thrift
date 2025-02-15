@@ -34,6 +34,17 @@ jobs:
         run:
           ./server/gradlew run -p server/server &
 
+      - name: wait server gets ready
+        timeout-minute: 5
+        run:
+          res=$(curl 127.0.0.1:8080/health)
+          while [ "$res" != "OK" ]; do
+            echo "NOT YET. SLEEP"
+            sleep 5
+            res=$(curl 127.0.0.1:8080/health)
+          done
+
+
       - name: test
         run:
           go test -v ./it
