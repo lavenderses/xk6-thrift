@@ -31,6 +31,21 @@
           ],
           "exceptions": [
           ]
+        },
+        {
+          "name": "boolCall",
+          "returnTypeId": "bool",
+          "oneway": false,
+          "arguments": [
+            {
+              "key": 1,
+              "name": "tf",
+              "typeId": "bool",
+              "required": "req_out"
+            }
+          ],
+          "exceptions": [
+          ]
         }
       ]
     }
