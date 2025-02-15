@@ -26,7 +26,13 @@ func setupTransport(t *testing.T) (*thrift.TTransport, error) {
 	return &trans, nil
 }
 
-func setupClient(trans *thrift.TTransport) (*idl.TestServiceClient, error) {
+func setupClient(t *testing.T) (*idl.TestServiceClient, error) {
+	var trans *thrift.TTransport
+	var err error
+	if trans, err = setupTransport(t); err != nil {
+		t.Fatalf("error opening transport. %v", err)
+	}
+
 	if err := (*trans).Open(); err != nil {
 		return nil, err
 	}
@@ -41,15 +47,9 @@ func setupClient(trans *thrift.TTransport) (*idl.TestServiceClient, error) {
 
 func TestSimpleCall(t *testing.T) {
 	// prepare
-	var trans *thrift.TTransport
-	var err error
-
-	if trans, err = setupTransport(t); err != nil {
-		t.Fatalf("error opening transport. %v", err)
-	}
-
 	var client *idl.TestServiceClient
-	if client, err = setupClient(trans); err != nil {
+	var err error
+	if client, err = setupClient(t); err != nil {
 		t.Fatalf("error creating client. %v", err)
 	}
 
