@@ -62,4 +62,9 @@ class Service: TestService.AsyncIface {
             resultHandler.onComplete(msg)
         }
     }
+
+    override fun boolCall(tf: Boolean, resultHandler: AsyncMethodCallback<Boolean>) {
+        log.info("Accept: $tf")
+        resultHandler.onComplete(tf)
+    }
 }

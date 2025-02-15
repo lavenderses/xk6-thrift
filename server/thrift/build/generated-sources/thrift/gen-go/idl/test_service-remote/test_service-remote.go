@@ -23,6 +23,7 @@ func Usage() {
   flag.PrintDefaults()
   fmt.Fprintln(os.Stderr, "\nFunctions:")
   fmt.Fprintln(os.Stderr, "  string simpleCall(string id)")
+  fmt.Fprintln(os.Stderr, "  bool boolCall(bool tf)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -153,6 +154,16 @@ func main() {
     argvalue0 := flag.Arg(1)
     value0 := argvalue0
     fmt.Print(client.SimpleCall(context.Background(), value0))
+    fmt.Print("\n")
+    break
+  case "boolCall":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "BoolCall requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1) == "true"
+    value0 := argvalue0
+    fmt.Print(client.BoolCall(context.Background(), value0))
     fmt.Print("\n")
     break
   case "":
