@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/lavenderses/xk6-thrift/pkg/gen-go/idl"
+	xk6_thrift "github.com/lavenderses/xk6-thrift"
 )
 
 var url = "http://127.0.0.1:8080/thrift"
@@ -26,7 +26,7 @@ func setupTransport(t *testing.T) (*thrift.TTransport, error) {
 	return &trans, nil
 }
 
-func setupClient(t *testing.T) (*idl.TestServiceClient, error) {
+func setupClient(t *testing.T) (*thrift.TStandardClient, error) {
 	var trans *thrift.TTransport
 	var err error
 	if trans, err = setupTransport(t); err != nil {
@@ -41,25 +41,26 @@ func setupClient(t *testing.T) (*idl.TestServiceClient, error) {
 	pf := thrift.NewTBinaryProtocolFactoryConf(&conf)
 	iprot := pf.GetProtocol(*trans)
 	oprot := pf.GetProtocol(*trans)
-	client := idl.NewTestServiceClient(thrift.NewTStandardClient(iprot, oprot))
+	client := thrift.NewTStandardClient(iprot, oprot)
 	return client, nil
 }
 
 func TestSimpleCall(t *testing.T) {
 	// prepare
-	var client *idl.TestServiceClient
+	var client *thrift.TStandardClient
 	var err error
 	if client, err = setupClient(t); err != nil {
 		t.Fatalf("error creating client. %v", err)
 	}
 
 	cxt := context.Background()
-	arg := "ID"
-	expect := "Success: ID"
-	var actual string
+	method := "simpleCall"
+	arg := xk6_thrift.NewTstring("ID")
+	expect := xk6_thrift.NewTstring("Success: ID")
+	actual := xk6_thrift.TString{}
 
 	// do & verify
-	if actual, err = (*client).SimpleCall(cxt, arg); err != nil {
+	if _, err = (*client).Call(cxt, method, &arg, &actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
 
