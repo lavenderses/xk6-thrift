@@ -19,6 +19,7 @@ class App {
 fun main() {
     Server.builder()
         .http(8080)
+        .service("/health", { _, _ -> HttpResponse.of("OK")})
         .service("/test") { _, _ -> HttpResponse.of("Hello, world!") }
         .serviceUnder("/docs", DocService())
         .accessLogWriter(AccessLogWriter.common(), true)
