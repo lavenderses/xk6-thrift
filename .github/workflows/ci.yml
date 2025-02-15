@@ -35,7 +35,7 @@ jobs:
           ./server/gradlew run -p server/server &
 
       - name: wait server gets ready
-        timeout-minute: 5
+        timeout-minutes: 5
         run:
           res=$(curl 127.0.0.1:8080/health)
           while [ "$res" != "OK" ]; do
