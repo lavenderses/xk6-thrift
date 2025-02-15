@@ -37,16 +37,6 @@ func (p *TBool) Read(ctx context.Context, iprot thrift.TProtocol) error {
 			break
 		}
 		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.BOOL {
-				if err := p.ReadField0(ctx, iprot); err != nil {
-					return err
-				}
-			} else {
-				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-					return err
-				}
-			}
 		case 1:
 			if fieldTypeId == thrift.BOOL {
 				if err := p.ReadField1(ctx, iprot); err != nil {
