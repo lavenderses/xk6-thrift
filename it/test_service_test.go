@@ -68,3 +68,27 @@ func TestSimpleCall(t *testing.T) {
 		t.Errorf("expected %v, but was %v", expect, actual)
 	}
 }
+
+func TestBoolCall(t *testing.T) {
+	// prepare
+	var client *thrift.TStandardClient
+	var err error
+	if client, err = setupClient(t); err != nil {
+		t.Fatalf("error creating client. %v", err)
+	}
+
+	cxt := context.Background()
+	method := "boolCall"
+	arg := xk6_thrift.NewTBool(true)
+	expect := xk6_thrift.NewTBool(true)
+	actual := xk6_thrift.TBool{}
+
+	// do & verify
+	if _, err = (*client).Call(cxt, method, &arg, &actual); err != nil {
+		t.Fatalf("error calling RPC. %v", err)
+	}
+
+	if actual != expect {
+		t.Errorf("expected %v, but was %v", expect, actual)
+	}
+}
