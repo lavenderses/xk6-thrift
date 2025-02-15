@@ -1,0 +1,4 @@
+issues:
+  exclude-dirs:
+    # this is generated code by Thrift compiler
+    - pkg/gen-go
