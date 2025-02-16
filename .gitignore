@@ -4,5 +4,6 @@ k6
 /server/**/build/*
 !/server/thrift/build/generated-sources
 /server/thrift/build/generated-sources/thrift/gen-html
+/server/thrift/build/generated-sources/thrift/gen-java
 .idea
 .kotlin

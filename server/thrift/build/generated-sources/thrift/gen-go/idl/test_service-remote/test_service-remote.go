@@ -24,6 +24,8 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "\nFunctions:")
   fmt.Fprintln(os.Stderr, "  string simpleCall(string id)")
   fmt.Fprintln(os.Stderr, "  bool boolCall(bool tf)")
+  fmt.Fprintln(os.Stderr, "  Message messageCall(Message message)")
+  fmt.Fprintln(os.Stderr, "   mapCall( maps)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -164,6 +166,57 @@ func main() {
     argvalue0 := flag.Arg(1) == "true"
     value0 := argvalue0
     fmt.Print(client.BoolCall(context.Background(), value0))
+    fmt.Print("\n")
+    break
+  case "messageCall":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "MessageCall requires 1 args")
+      flag.Usage()
+    }
+    arg32 := flag.Arg(1)
+    mbTrans33 := thrift.NewTMemoryBufferLen(len(arg32))
+    defer mbTrans33.Close()
+    _, err34 := mbTrans33.WriteString(arg32)
+    if err34 != nil {
+      Usage()
+      return
+    }
+    factory35 := thrift.NewTJSONProtocolFactory()
+    jsProt36 := factory35.GetProtocol(mbTrans33)
+    argvalue0 := idl.NewMessage()
+    err37 := argvalue0.Read(context.Background(), jsProt36)
+    if err37 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.MessageCall(context.Background(), value0))
+    fmt.Print("\n")
+    break
+  case "mapCall":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "MapCall requires 1 args")
+      flag.Usage()
+    }
+    arg38 := flag.Arg(1)
+    mbTrans39 := thrift.NewTMemoryBufferLen(len(arg38))
+    defer mbTrans39.Close()
+    _, err40 := mbTrans39.WriteString(arg38)
+    if err40 != nil { 
+      Usage()
+      return
+    }
+    factory41 := thrift.NewTJSONProtocolFactory()
+    jsProt42 := factory41.GetProtocol(mbTrans39)
+    containerStruct0 := idl.NewTestServiceMapCallArgs()
+    err43 := containerStruct0.ReadField1(context.Background(), jsProt42)
+    if err43 != nil {
+      Usage()
+      return
+    }
+    argvalue0 := containerStruct0.Maps
+    value0 := argvalue0
+    fmt.Print(client.MapCall(context.Background(), value0))
     fmt.Print("\n")
     break
   case "":

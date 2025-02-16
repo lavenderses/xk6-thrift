@@ -6,6 +6,7 @@ import com.linecorp.armeria.server.Server
 import com.linecorp.armeria.server.docs.DocService
 import com.linecorp.armeria.server.logging.AccessLogWriter
 import com.linecorp.armeria.server.thrift.THttpService
+import idl.Message
 import idl.TestService
 import org.apache.thrift.async.AsyncMethodCallback
 import org.slf4j.LoggerFactory
@@ -66,5 +67,22 @@ class Service: TestService.AsyncIface {
     override fun boolCall(tf: Boolean, resultHandler: AsyncMethodCallback<Boolean>) {
         log.info("Accept: $tf")
         resultHandler.onComplete(tf)
+    }
+
+    override fun messageCall(message: Message, resultHandler: AsyncMethodCallback<Message>) {
+        log.info("Accept: $message")
+        val newMessage = Message("content: ${message.content}", message.tags, message.nested)
+        log.info("Respond: $newMessage")
+        resultHandler.onComplete(newMessage)
+    }
+
+    override fun mapCall(
+        maps: MutableMap<String, Boolean>,
+        resultHandler: AsyncMethodCallback<MutableMap<String, Boolean>>,
+    ) {
+        log.info("Accept: $maps")
+        val newMaps = maps.map { "NEW: ${it.key}" to it.value }.toMap().toMutableMap()
+        log.info("Respond: $newMaps")
+        resultHandler.onComplete(newMaps)
     }
 }

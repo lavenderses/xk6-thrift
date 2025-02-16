@@ -10,6 +10,53 @@
   "typedefs": [
   ],
   "structs": [
+    {
+      "name": "Nested",
+      "isException": false,
+      "isUnion": false,
+      "fields": [
+        {
+          "key": 1,
+          "name": "inner",
+          "typeId": "string",
+          "required": "req_out"
+        }
+      ]
+    },
+    {
+      "name": "Message",
+      "isException": false,
+      "isUnion": false,
+      "fields": [
+        {
+          "key": 1,
+          "name": "content",
+          "typeId": "string",
+          "required": "req_out"
+        },
+        {
+          "key": 2,
+          "name": "tags",
+          "typeId": "map",
+          "type": {
+            "typeId": "map",
+            "keyTypeId": "string",
+            "valueTypeId": "bool"
+          },
+          "required": "req_out"
+        },
+        {
+          "key": 3,
+          "name": "nested",
+          "typeId": "struct",
+          "type": {
+            "typeId": "struct",
+            "class": "Nested"
+          },
+          "required": "req_out"
+        }
+      ]
+    }
   ],
   "constants": [
   ],
@@ -41,6 +88,54 @@
               "key": 1,
               "name": "tf",
               "typeId": "bool",
+              "required": "req_out"
+            }
+          ],
+          "exceptions": [
+          ]
+        },
+        {
+          "name": "messageCall",
+          "returnTypeId": "struct",
+          "returnType": {
+            "typeId": "struct",
+            "class": "Message"
+          },
+          "oneway": false,
+          "arguments": [
+            {
+              "key": 1,
+              "name": "message",
+              "typeId": "struct",
+              "type": {
+                "typeId": "struct",
+                "class": "Message"
+              },
+              "required": "req_out"
+            }
+          ],
+          "exceptions": [
+          ]
+        },
+        {
+          "name": "mapCall",
+          "returnTypeId": "map",
+          "returnType": {
+            "typeId": "map",
+            "keyTypeId": "string",
+            "valueTypeId": "bool"
+          },
+          "oneway": false,
+          "arguments": [
+            {
+              "key": 1,
+              "name": "maps",
+              "typeId": "map",
+              "type": {
+                "typeId": "map",
+                "keyTypeId": "string",
+                "valueTypeId": "bool"
+              },
               "required": "req_out"
             }
           ],
