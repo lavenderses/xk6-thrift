@@ -51,15 +51,8 @@ func (p *TRequest) writeFields(cxt context.Context, oprot thrift.TProtocol) (err
 	}
 
 	for fid, v := range p.values {
-		if tv, ok := v.(*TString); ok {
-			if err = tv.WriteField(cxt, oprot, fid, "dummy"); err != nil {
-				return
-			}
-		}
-		if tv, ok := v.(*TBool); ok {
-			if err = tv.WriteField(cxt, oprot, fid, "dummy"); err != nil {
-				return
-			}
+		if err = v.WriteField(cxt, oprot, fid, "dummy"); err != nil {
+			return
 		}
 	}
 	return
