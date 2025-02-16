@@ -11,12 +11,12 @@ type TBool struct {
 	value bool
 }
 
-func NewTBool(v bool) TBool {
-	return TBool{value: v}
+func NewTBool(v bool) *TBool {
+	return &TBool{value: v}
 }
 
-func (p TBool) Equals(other *TValue) bool {
-	o, ok := (*other).(TBool)
+func (p *TBool) Equals(other *TValue) bool {
+	o, ok := (*other).(*TBool)
 	if !ok {
 		return false
 	}

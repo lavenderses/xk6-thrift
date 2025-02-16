@@ -57,8 +57,7 @@ func (p *TResponse) ReadString(cxt context.Context, iproto thrift.TProtocol, fie
 		return thrift.PrependError(fmt.Sprintf("error reading string field %d: ", fieldId), err)
 	}
 	
-	tv := NewTstring(v)
-	p.values[fieldId] = tv
+	p.values[fieldId] = NewTstring(v)
 	return nil
 }
 
@@ -68,8 +67,7 @@ func (p *TResponse) ReadBool(cxt context.Context, iproto thrift.TProtocol, field
 		return thrift.PrependError(fmt.Sprintf("error reading boolean field %d: ", fieldId), err)
 	}
 	
-	tv := NewTBool(v)
-	p.values[fieldId] = tv
+	p.values[fieldId] = NewTBool(v)
 	return nil
 }
 

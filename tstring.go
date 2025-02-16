@@ -11,12 +11,12 @@ type TString struct {
 	value string
 }
 
-func NewTstring(v string) TString {
-	return TString{value: v}
+func NewTstring(v string) *TString {
+	return &TString{value: v}
 }
 
-func (p TString) Equals(other *TValue) bool {
-	o, ok := (*other).(TString)
+func (p *TString) Equals(other *TValue) bool {
+	o, ok := (*other).(*TString)
 	if !ok {
 		return false
 	}

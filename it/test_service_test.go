@@ -62,7 +62,7 @@ func TestSimpleCall(t *testing.T) {
 	actual := xk6_thrift.NewTResponse()
 
 	// do & verify
-	if _, err = (*client).Call(cxt, method, &arg, actual); err != nil {
+	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
 
@@ -87,7 +87,7 @@ func TestBoolCall(t *testing.T) {
 	actual := xk6_thrift.NewTResponse()
 
 	// do & verify
-	if _, err = (*client).Call(cxt, method, &arg, actual); err != nil {
+	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
 
