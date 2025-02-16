@@ -11,19 +11,19 @@ type TBool struct {
 	value bool
 }
 
-func NewTBool(v bool) *TBool {
-	return &TBool{value: v}
+func NewTBool(v bool) TBool {
+	return TBool{value: v}
 }
 
-func (p *TBool) Equals(other *TValue) bool {
-	o, ok := (*other).(*TBool)
+func (p TBool) Equals(other *TValue) bool {
+	o, ok := (*other).(TBool)
 	if !ok {
 		return false
 	}
 	return p.value == o.value
 }
 
-func (p *TBool) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
+func (p TBool) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
 	if err = oprot.WriteFieldBegin(cxt, fname, thrift.BOOL, fid); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s: ", p, fid, fname), err)
 		return
@@ -39,6 +39,7 @@ func (p *TBool) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int1
 	return
 }
 
+// following methods will be removed
 func (p *TBool) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)

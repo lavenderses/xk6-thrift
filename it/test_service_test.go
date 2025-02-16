@@ -2,7 +2,6 @@ package it
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -66,10 +65,7 @@ func TestSimpleCall(t *testing.T) {
 	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
-
-	if !reflect.DeepEqual(actual.Values(), expect.Values()) {
-		t.Errorf("expected %v, but was %v", expect, actual)
-	}
+	assertEquals(t, *actual, *expect)
 }
 
 func TestBoolCall(t *testing.T) {
@@ -93,8 +89,40 @@ func TestBoolCall(t *testing.T) {
 	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
 		t.Fatalf("error calling RPC. %v", err)
 	}
+	assertEquals(t, *actual, *expect)
+}
 
-	if !reflect.DeepEqual(actual.Values(), expect.Values()) {
-		t.Errorf("expected %v, but was %v", expect, actual)
+func TestMapCall(t *testing.T) {
+	// prepare
+	var client *thrift.TStandardClient
+	var err error
+	if client, err = setupClient(t); err != nil {
+		t.Fatalf("error creating client. %v", err)
 	}
+
+	cxt := context.Background()
+	method := "mapCall"
+	value := map[xk6_thrift.TValue]xk6_thrift.TValue{
+		xk6_thrift.NewTstring("key 1"): xk6_thrift.NewTBool(true),
+		xk6_thrift.NewTstring("key 2"): xk6_thrift.NewTBool(false),
+	}
+	tvalue := map[int16]xk6_thrift.TValue{
+		1: xk6_thrift.NewTMap(&value),
+	}
+	arg := xk6_thrift.NewTRequestWithValue(&tvalue)
+	expectValue := map[xk6_thrift.TValue]xk6_thrift.TValue{
+		xk6_thrift.NewTstring("NEW: key 1"): xk6_thrift.NewTBool(true),
+		xk6_thrift.NewTstring("NEW: key 2"): xk6_thrift.NewTBool(false),
+	}
+	expectTValue := xk6_thrift.NewTMap(&expectValue)
+	expect := xk6_thrift.NewTResponse()
+	expect.Add(0, expectTValue)
+	actual := xk6_thrift.NewTResponse()
+
+	// do & verify
+	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
+		t.Fatalf("error calling RPC. %v", err)
+	}
+
+	assertEquals(t, *actual, *expect)
 }

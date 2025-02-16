@@ -11,19 +11,19 @@ type TString struct {
 	value string
 }
 
-func NewTstring(v string) *TString {
-	return &TString{value: v}
+func NewTstring(v string) TString {
+	return TString{value: v}
 }
 
-func (p *TString) Equals(other *TValue) bool {
-	o, ok := (*other).(*TString)
+func (p TString) Equals(other *TValue) bool {
+	o, ok := (*other).(TString)
 	if !ok {
 		return false
 	}
 	return p.value == o.value
 }
 
-func (p *TString) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
+func (p TString) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
 	if err = oprot.WriteFieldBegin(cxt, fname, thrift.STRING, fid); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s: ", p, fid, fname), err)
 		return
@@ -39,6 +39,7 @@ func (p *TString) WriteField(cxt context.Context, oprot thrift.TProtocol, fid in
 	return
 }
 
+// following methods will be removed
 func (p *TString) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)

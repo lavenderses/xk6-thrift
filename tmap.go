@@ -1,0 +1,85 @@
+package thrift
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/apache/thrift/lib/go/thrift"
+)
+
+type TMap struct {
+	value     map[TValue]TValue
+	keyType   thrift.TType
+	valueType thrift.TType
+}
+
+func NewTMap(v *map[TValue]TValue) *TMap {
+	return &TMap{value: *v}
+}
+
+func (p *TMap) Equals(other *TValue) bool {
+	o, ok := (*other).(*TMap)
+	if !ok {
+		return false
+	}
+	if len(p.value) != len(o.value) {
+		return false
+	}
+	for pk, pv := range p.value {
+		ov := o.value[pk]
+		if !pv.Equals(&ov) {
+			return false
+		}
+	}
+	return true
+}
+
+func (p *TMap) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
+	if err = oprot.WriteFieldBegin(cxt, fname, thrift.MAP, fid); err != nil {
+		err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s: ", p, fid, fname), err)
+		return
+	}
+	if err = oprot.WriteMapBegin(cxt, p.keyType, p.valueType, len(p.value)); err != nil {
+		err = thrift.PrependError(fmt.Sprintf("%T write map begin error %d:%s", p, fid, fname), err)
+		return
+	}
+
+	for k, v := range p.value {
+		if err = p.writePair(cxt, oprot, k, v); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write key value (field %d) error", p, fid), err)
+			return
+		}
+	}
+
+	if err = oprot.WriteMapEnd(cxt); err != nil {
+		err = thrift.PrependError(fmt.Sprintf("%T write map end error %d:%s", p, fid, fname), err)
+		return
+	}
+	if err = oprot.WriteFieldEnd(cxt); err != nil {
+		err = thrift.PrependError(fmt.Sprintf("%T write field end error %d:%s: ", p, fid, fname), err)
+		return
+	}
+
+	return
+}
+
+func (p *TMap) writePair(cxt context.Context, oprot thrift.TProtocol, k, v TValue) (err error) {
+	if err = p.writeEntry(cxt, oprot, k); err != nil {
+		return
+	}
+	if err = p.writeEntry(cxt, oprot, v); err != nil {
+		return
+	}
+	return
+}
+
+func (p *TMap) writeEntry(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
+	if o, ok := value.(TString); ok {
+		oprot.WriteString(cxt, o.value)
+	} else if o, ok := value.(TBool); ok {
+		err = oprot.WriteBool(cxt, o.value)
+	} else {
+		return
+	}
+	return
+}
