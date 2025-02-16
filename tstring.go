@@ -15,6 +15,14 @@ func NewTstring(v string) TString {
 	return TString{value: v}
 }
 
+func (p TString) Equals(other *TValue) bool {
+	o, ok := (*other).(TString)
+	if !ok {
+		return false
+	}
+	return p.value == o.value
+}
+
 func (p *TString) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -29,16 +37,6 @@ func (p *TString) Read(ctx context.Context, iprot thrift.TProtocol) error {
 			break
 		}
 		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.STRING {
-				if err := p.ReadField0(ctx, iprot); err != nil {
-					return err
-				}
-			} else {
-				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-					return err
-				}
-			}
 		case 1:
 			if fieldTypeId == thrift.STRING {
 				if err := p.ReadField1(ctx, iprot); err != nil {

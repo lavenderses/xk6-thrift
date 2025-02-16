@@ -15,6 +15,14 @@ func NewTBool(v bool) TBool {
 	return TBool{value: v}
 }
 
+func (p TBool) Equals(other *TValue) bool {
+	o, ok := (*other).(TBool)
+	if !ok {
+		return false
+	}
+	return p.value == o.value
+}
+
 func (p *TBool) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -29,16 +37,6 @@ func (p *TBool) Read(ctx context.Context, iprot thrift.TProtocol) error {
 			break
 		}
 		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.BOOL {
-				if err := p.ReadField0(ctx, iprot); err != nil {
-					return err
-				}
-			} else {
-				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-					return err
-				}
-			}
 		case 1:
 			if fieldTypeId == thrift.BOOL {
 				if err := p.ReadField1(ctx, iprot); err != nil {
