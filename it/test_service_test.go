@@ -2,7 +2,6 @@ package it
 
 import (
 	"context"
-	"log/slog"
 	"reflect"
 	"testing"
 
@@ -20,7 +19,7 @@ func setupTransport(t *testing.T) (*thrift.TTransport, error) {
 	}
 	// alaways close transport every test execution
 	t.Cleanup(func() {
-		slog.Info("closing tranport.", slog.Any("transport", trans))
+		t.Logf("closing tranport. %v", trans)
 		trans.Close()
 	})
 
@@ -56,7 +55,9 @@ func TestSimpleCall(t *testing.T) {
 
 	cxt := context.Background()
 	method := "simpleCall"
-	arg := xk6_thrift.NewTstring("ID")
+	values := make(map[int16]xk6_thrift.TValue)
+	values[1] = xk6_thrift.NewTstring("ID")
+	arg := xk6_thrift.NewTRequestWithValue(&values)
 	expect := xk6_thrift.NewTResponse()
 	expect.Add(0, xk6_thrift.NewTstring("Success: ID"))
 	actual := xk6_thrift.NewTResponse()
@@ -81,7 +82,9 @@ func TestBoolCall(t *testing.T) {
 
 	cxt := context.Background()
 	method := "boolCall"
-	arg := xk6_thrift.NewTBool(true)
+	values := make(map[int16]xk6_thrift.TValue)
+	values[1] = xk6_thrift.NewTBool(true)
+	arg := xk6_thrift.NewTRequestWithValue(&values)
 	expect := xk6_thrift.NewTResponse()
 	expect.Add(0, xk6_thrift.NewTBool(true))
 	actual := xk6_thrift.NewTResponse()
