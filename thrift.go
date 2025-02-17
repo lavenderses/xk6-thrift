@@ -3,7 +3,7 @@ package thrift
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/apache/thrift/lib/go/thrift"
@@ -31,7 +31,7 @@ func (m *TModule) Echo() {
 	sock := thrift.NewTSocketConf("127.0.0.1:8080", &cfg)
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
-		fmt.Println("ERROR: ", err)
+		slog.Error("ERROR: ", err)
 		return
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
@@ -42,16 +42,17 @@ func (m *TModule) Echo() {
 
 	err = transport.Open()
 	if err != nil {
-		fmt.Println("ERROR: ", err)
+		slog.Error("ERROR: ", err)
 		return
 	}
 
-	req := TString{}
-	res := TString{}
-	req.value = "request ID"
+	values := make(map[int16]TValue)
+	values[1] = NewTstring("ID")
+	req := NewTRequestWithValue(&values)
+	res := NewTResponse()
 
 	cxt := context.Background()
-	tclient.Call(cxt, method, &req, &res)
+	tclient.Call(cxt, method, req, res)
 
-	fmt.Println("Response: \"", res.value, "\"")
+	slog.Info("Response:", res.values)
 }

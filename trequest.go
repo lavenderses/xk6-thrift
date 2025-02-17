@@ -3,6 +3,7 @@ package thrift
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/apache/thrift/lib/go/thrift"
 )
@@ -20,7 +21,7 @@ func NewTRequestWithValue(v *map[int16]TValue) *TRequest {
 }
 
 func (p *TRequest) Read(cxt context.Context, iprot thrift.TProtocol) (err error) {
-	// dummy
+	slog.Error("*Trequest.Read is not expected to be called.")
 	return
 }
 
