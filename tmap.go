@@ -53,7 +53,7 @@ func (p *TMap) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16
 	}
 
 	for k, v := range p.value {
-		if err = p.writePair(cxt, oprot, k, v); err != nil {
+		if err = p.writeFieldDataKeyValue(cxt, oprot, k, v); err != nil {
 			err = thrift.PrependError(fmt.Sprintf("%T write key value (field %d) error", p, fid), err)
 			return
 		}
@@ -71,17 +71,17 @@ func (p *TMap) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16
 	return
 }
 
-func (p *TMap) writePair(cxt context.Context, oprot thrift.TProtocol, k, v TValue) (err error) {
-	if err = p.writeEntry(cxt, oprot, k); err != nil {
+func (p *TMap) writeFieldDataKeyValue(cxt context.Context, oprot thrift.TProtocol, k, v TValue) (err error) {
+	if err = p.writeFieldData(cxt, oprot, k); err != nil {
 		return
 	}
-	if err = p.writeEntry(cxt, oprot, v); err != nil {
+	if err = p.writeFieldData(cxt, oprot, v); err != nil {
 		return
 	}
 	return
 }
 
-func (p *TMap) writeEntry(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
+func (p *TMap) writeFieldData(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
 	if o, ok := value.(TString); ok {
 		oprot.WriteString(cxt, o.value)
 	} else if o, ok := value.(TBool); ok {
