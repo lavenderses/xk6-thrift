@@ -71,6 +71,11 @@ func (p *TMap) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16
 	return
 }
 
+// See the above spec.
+//
+//   <map>        ::= <map-begin> <field-data>* <map-end>
+//   <field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+//                    <struct> | <map> | <list> | <set>
 func (p *TMap) writeFieldDataKeyValue(cxt context.Context, oprot thrift.TProtocol, k, v TValue) (err error) {
 	if err = p.writeFieldData(cxt, oprot, k); err != nil {
 		return
@@ -81,6 +86,10 @@ func (p *TMap) writeFieldDataKeyValue(cxt context.Context, oprot thrift.TProtoco
 	return
 }
 
+// See the above spec.
+//
+//   <field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+//                    <struct> | <map> | <list> | <set>
 func (p *TMap) writeFieldData(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
 	if o, ok := value.(TString); ok {
 		oprot.WriteString(cxt, o.value)
