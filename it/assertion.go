@@ -26,7 +26,7 @@ func assertEquals(t *testing.T, actual, expect xk6_thrift.TResponse) {
 			failure = true
 		}
 	}
-	for ak, av := range evs {
+	for ak, av := range avs {
 		ev := evs[ak]
 		if ev == nil {
 			msg = fmt.Sprintf("%s\ngo unexpected value %v", msg, av)

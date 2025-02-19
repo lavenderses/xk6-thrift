@@ -141,7 +141,7 @@ func TestMessageCall(t *testing.T) {
 		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("this is a content"),
 		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
-				xk6_thrift.NewTstring("bool true"): xk6_thrift.NewTBool(true),
+				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
 				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
 			},
 		),
@@ -156,16 +156,16 @@ func TestMessageCall(t *testing.T) {
 	}
 	arg := xk6_thrift.NewTRequestWithValue(&tvalue)
 	expectValue := map[xk6_thrift.TStructField]xk6_thrift.TValue{
-		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("this is a content"),
-		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("content: this is a content"),
+		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
-				xk6_thrift.NewTstring("bool true"): xk6_thrift.NewTBool(true),
+				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
 				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
 			},
 		),
-		*xk6_thrift.NewTStructField(3, "nested"): xk6_thrift.NewTStruct(
+		*xk6_thrift.NewTStructField(3, ""): xk6_thrift.NewTStruct(
 			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
-				*xk6_thrift.NewTStructField(1, "inner"): xk6_thrift.NewTstring("this is an inner content"),
+				*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("this is an inner content"),
 			},
 		),
 	}
