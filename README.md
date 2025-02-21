@@ -120,7 +120,7 @@ These are currently supported.
 
 ## Detailed usage
 
-> ![NOTE]
+> [!NOTE]
 > **Type in JavaScript is called *ttypes* in this document.**
 
 ### Type mapping between Thrift and JavaScript
