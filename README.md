@@ -1,8 +1,8 @@
 # xk6-thrift
 
-A k6 extension for load testing Thrift RPC service.
+A k6 extension for load testing Thrift RPC service, which is light weight and almost native.
 
-> [!INFO]
+> [!NOTE]
 > This document is in progress of brushing up
 
 ## Get started
@@ -46,11 +46,59 @@ Now it's ready to call Thrift RPC service.
 
 See [scripts/](./scripts/) directory for more examples.
 
-## Requirements
+## Install
+
+### Install binaries
+
+Currently preparing binary. Follow the procedure mentioned in the [next section](#install-by-building-source). (:sorry:)
+
+### Install by building source
+
+#### with Golang
+
+Followings are the requirements.
 
 - Golang v1.23 or higher (tested in this version)
 
+First, install xk6 go library.
+
+```shell
+$ go install go.k6.io/xk6/cmd/xk6@latest
+# you can find xk6 command is installed
+$ xk6 version
+```
+
+Then (and finally), build binary using xk6-thrift extension with following command.
+Use the xk6 version you want to use instead of `v0.57.0`.
+
+Currently `v0.1.0` is the latest version of xk6-thrift. Specify any version you want to use.
+
+```shell
+$ xk6 build v0.57.0 \
+  --with github.com/lavenderses/xk6-thrift@v0.1.0
+```
+
+For more information, please refer k6s document:
+[Build a k6 binary using Go | Grafana k6 documentation](https://grafana.com/docs/k6/latest/extensions/build-k6-binary-using-go/)
+
+#### with Docker
+
+Alternatively, you can build binary using Docker when you don't have Docker envrionment.
+If you want to run built binary on other architecture platforms such as windows, specify `GOOS` env var.
+
+```shell
+$ git clone git@github.com:lavenderses/xk6-thrift && cd xk6-thrift
+$ git checkout x0.1.0 # Any revision you want to use
+$ docker run --rm -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" grafana/xk6 build \
+  --with github.com/mostafa/xk6-thrift=.
+```
+
+For more information, please refer k6s document:
+[Build a k6 binary using Docker | Grafana k6 documentation](https://grafana.com/docs/k6/latest/extensions/build-k6-binary-using-docker/)
+
 ## Features
+
+These are currently supported.
 
 - Thrift using HTTP as transport layer.
 - Thrift types
@@ -59,7 +107,7 @@ See [scripts/](./scripts/) directory for more examples.
   - map (Use `ttypes.newTMap()`)
   - struct (Use `ttypes.newTStruct()`)
 
-## Features (planning)
+### Planning features
 
 - Thrift using TCP as transport layer.
 - Thrift types
@@ -72,7 +120,130 @@ See [scripts/](./scripts/) directory for more examples.
 
 ## Detailed usage
 
-TBD.
+> ![NOTE]
+> **Type in JavaScript is called *ttypes* in this document.**
+
+### Type mapping between Thrift and JavaScript
+
+#### string (*ttypes string*)
+
+Thrift `string` is mapped to `string` in JavaScript.
+
+You can use *ttypes string* by `ttypes.newTString(string)` function.
+
+#### boolean
+
+Thrift `boolean` is mapped to `boolean` in JavaScript.
+Similar to `string`.
+
+You can use ttypes boolean *by `ttypes.newTBool(boolean)` function.
+
+#### map
+
+Thrift `map` is maped to dictionary in JavaScript.
+
+Key and value in the dictionary should be *ttypes*.
+For example, map can be defined like this.
+
+```thrift
+struct Foo {
+  1:map<string, bool> bar,
+}
+```
+
+```javascript
+import ttypes from 'k6/x/thrift/thrift/ttypes';
+
+// define raw value as dictionary
+const rawMap = {}
+// define key and value as ttypes
+rowMap[ttypes.newTString("key 1")] = ttypes.newTBool(true);
+rowMap[ttypes.newTString("key 2")] = ttypes.newTBool(false);
+// wrap the raw value dictionary with ttypes.newTMap()
+const bar = ttypes.newTMap(bar);
+```
+
+#### struct
+
+Similar to map, Thrift `struct` is mapped to dictionary in JavaScript.
+
+But, unlike map, key of the dictionary should be number, not *ttypes*.
+And the key must be a Thrift field ID.
+Value is *ttypes*.
+
+For example, struct can be defined like this.
+
+```thrift
+struct Foo {
+  1:string bar,
+  2:map<string, bool> buz,
+}
+```
+
+```javascript
+import ttypes from 'k6/x/thrift/thrift/ttypes';
+
+// define string and map<string, bool> like the above example.
+const bar = ttypes.newTString(...);
+const buz = ttypes.newTMap( {...} );
+
+// define raw value as dictionary
+const rawStruct = {}
+// define key and value as ttypes. key should be a field ID.
+rawStruct[1] = bar;
+rawStruct[2] = buz
+// wrap the raw value dictionary with ttypes.newTStruct()
+const foo = ttypes.newTStruct(rawStruct);
+```
+
+### Calling RPC service
+
+To call Thrift RPC service, you have to create request body class.
+Use `ttypes.newTRequest(dictionary<int, ttypes>)` function in `'k6/x/thrift/ttypes'` module.
+
+Arguments of `ttypes.newTRequest()`, which is dictionary, correspond to arguments in the target Thrift RPC.
+
+Key of the dictionary is the number of ID in Thrift definition.
+And value of it is a instance created by `ttypes.newTXxx()` method.
+For information about supported types and functions to create them, please read following [Types in JavaScript](#types-in-javascript) section.
+
+e.g.
+
+```thrift
+struct FooRequest {
+  1:string foo,
+}
+
+struct BarRequest {
+  1:bool foo,
+}
+
+service YourService {
+  string methodCall(1: FooRequest fooRequest, 2:string something, 3:BarRequest barRequest);
+}
+```
+
+```javascript
+import thrift from 'k6/thrift/thrift';
+import ttypes from 'k6/thrift/thirft/ttypes';
+
+// define struct like the above section.
+const fooRequest = ttypes.newTStruct( {...} );
+const something = ttypes.newTString("...");
+const barRequest = ttypes.newTStruct( {...} );
+
+// define raw value as dictionary
+const rawRequest = {}
+// define key and value as ttypes. key should be an ID of argument
+rawRequest[1] = fooRequest
+rawRequest[2] = something
+rawRequest[3] = barRequest
+// wrap the raw value dictionary with ttypes.newTRequest()
+const request = ttypes.newTRequest(rawRequest)
+// call method with method name and its request
+const metthodName = "methodCall"
+thrift.call(methodName, request)
+```
 
 ## Development
 
@@ -103,4 +274,3 @@ Apache License 2.0. See [LICENSE](./LICENSE).
 
 Any issue report, feedback, feature request or pull request is welcome.
 Please feel free to open an issue or submit pull request.
-
