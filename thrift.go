@@ -18,7 +18,7 @@ func init() {
 
 type TModule struct{}
 
-func (m *TModule) Echo() {
+func (m *TModule) Echo() *TCallResult {
 	host := "127.0.0.1"
 	port := 8080
 	path := "/thrift"
@@ -34,7 +34,7 @@ func (m *TModule) Echo() {
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
 		slog.Error("ERROR while getting transport", slog.Any("error", err))
-		return
+		return NewFailureTCallResult(err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
 	iprot := pf.GetProtocol(transport)
@@ -45,7 +45,7 @@ func (m *TModule) Echo() {
 	err = transport.Open()
 	if err != nil {
 		slog.Error("ERROR while opening transport", slog.Any("error", err))
-		return
+		return NewFailureTCallResult(err)
 	}
 
 	values := make(map[int16]TValue)
@@ -57,10 +57,17 @@ func (m *TModule) Echo() {
 	_, err = tclient.Call(cxt, method, req, res)
 	if err != nil {
 		slog.Error("ERROR calling RPC", slog.Any("error", err))
-		return
+		return NewFailureTCallResult(err)
 	}
 
 	slog.Info(fmt.Sprintf("Response: %v", res))
+
+	body := res.values[0]
+	if body == nil {
+		return NewFailureTCallResult(fmt.Errorf("Empty body"))
+	}
+	
+	return NewTCallResult(&body)
 }
 
 func (m *TModule) Call(method string, req *TRequest) {
