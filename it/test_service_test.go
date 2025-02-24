@@ -126,3 +126,58 @@ func TestMapCall(t *testing.T) {
 
 	assertEquals(t, *actual, *expect)
 }
+
+func TestMessageCall(t *testing.T) {
+	// prepare
+	var client *thrift.TStandardClient
+	var err error
+	if client, err = setupClient(t); err != nil {
+		t.Fatalf("error creating client. %v", err)
+	}
+
+	cxt := context.Background()
+	method := "messageCall"
+	value := map[xk6_thrift.TStructField]xk6_thrift.TValue{
+		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("this is a content"),
+		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+			&map[xk6_thrift.TValue]xk6_thrift.TValue{
+				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
+				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
+			},
+		),
+		*xk6_thrift.NewTStructField(3, "nested"): xk6_thrift.NewTStruct(
+			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
+				*xk6_thrift.NewTStructField(1, "inner"): xk6_thrift.NewTstring("this is an inner content"),
+			},
+		),
+	}
+	tvalue := map[int16]xk6_thrift.TValue{
+		1: xk6_thrift.NewTStruct(&value),
+	}
+	arg := xk6_thrift.NewTRequestWithValue(&tvalue)
+	expectValue := map[xk6_thrift.TStructField]xk6_thrift.TValue{
+		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("content: this is a content"),
+		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
+			&map[xk6_thrift.TValue]xk6_thrift.TValue{
+				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
+				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
+			},
+		),
+		*xk6_thrift.NewTStructField(3, ""): xk6_thrift.NewTStruct(
+			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
+				*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("this is an inner content"),
+			},
+		),
+	}
+	expectTValue := xk6_thrift.NewTStruct(&expectValue)
+	expect := xk6_thrift.NewTResponse()
+	expect.Add(0, expectTValue)
+	actual := xk6_thrift.NewTResponse()
+
+	// do & verify
+	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
+		t.Fatalf("error calling RPC. %v", err)
+	}
+
+	assertEquals(t, *actual, *expect)
+}
