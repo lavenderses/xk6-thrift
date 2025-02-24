@@ -59,5 +59,5 @@ func (m *TModule) Echo() {
 		return
 	}
 
-	slog.Info(fmt.Sprint("Response: %v", res))
+	slog.Info(fmt.Sprintf("Response: %v", res))
 }
