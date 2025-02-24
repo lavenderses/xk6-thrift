@@ -34,7 +34,7 @@ func (m *TModule) Echo() *TCallResult {
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
 		slog.Error("ERROR while getting transport", slog.Any("error", err))
-		return NewFailureTCallResult(err)
+		return NewTCallResult(nil, err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
 	iprot := pf.GetProtocol(transport)
@@ -45,7 +45,7 @@ func (m *TModule) Echo() *TCallResult {
 	err = transport.Open()
 	if err != nil {
 		slog.Error("ERROR while opening transport", slog.Any("error", err))
-		return NewFailureTCallResult(err)
+		return NewTCallResult(nil, err)
 	}
 
 	values := make(map[int16]TValue)
@@ -57,20 +57,20 @@ func (m *TModule) Echo() *TCallResult {
 	_, err = tclient.Call(cxt, method, req, res)
 	if err != nil {
 		slog.Error("ERROR calling RPC", slog.Any("error", err))
-		return NewFailureTCallResult(err)
+		return NewTCallResult(nil, err)
 	}
 
 	slog.Info(fmt.Sprintf("Response: %v", res))
 
 	body := res.values[0]
 	if body == nil {
-		return NewFailureTCallResult(fmt.Errorf("Empty body"))
+		return NewTCallResult(nil, fmt.Errorf("Empty body"))
 	}
 	
-	return NewTCallResult(&body)
+	return NewTCallResult(&body, nil)
 }
 
-func (m *TModule) Call(method string, req *TRequest) {
+func (m *TModule) Call(method string, req *TRequest) *TCallResult {
 	host := "127.0.0.1"
 	port := 8080
 	path := "/thrift"
@@ -85,7 +85,7 @@ func (m *TModule) Call(method string, req *TRequest) {
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
 		slog.Error("ERROR: ", err)
-		return
+		return NewTCallResult(nil, err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
 	iprot := pf.GetProtocol(transport)
@@ -96,13 +96,23 @@ func (m *TModule) Call(method string, req *TRequest) {
 	err = transport.Open()
 	if err != nil {
 		slog.Error("ERROR: ", err)
-		return
+		return NewTCallResult(nil, err)
 	}
 
 	res := NewTResponse()
 
 	cxt := context.Background()
-	tclient.Call(cxt, method, req, res)
+	_, err = tclient.Call(cxt, method, req, res)
+	if err != nil {
+		slog.Error("ERROR calling RPC", slog.Any("error", err))
+		return NewTCallResult(nil, err)
+	}
+	body := res.values[0]
+	if body == nil {
+		return NewTCallResult(nil, fmt.Errorf("Empty body"))
+	}
 
 	slog.Info("Response:", res.values)
+	
+	return NewTCallResult(&body, nil)
 }
