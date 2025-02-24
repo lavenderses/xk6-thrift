@@ -12,8 +12,7 @@ func assertEquals(t *testing.T, actual, expect xk6_thrift.TResponse) {
 	avs := *actual.Values()
 	evs := *expect.Values()
 	if len(avs) != len(evs) {
-		msg := fmt.Sprintf("expeted size %d, but was %d", len(evs), len(avs))
-		t.Errorf(msg)
+		t.Errorf("expected size %d, but was %d", len(evs), len(avs))
 		return
 	}
 

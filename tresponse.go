@@ -135,7 +135,7 @@ func (p *TResponse) readField(cxt context.Context, iprot thrift.TProtocol, ttype
 func (p *TResponse) ReadStruct(cxt context.Context, iprot thrift.TProtocol, fieldId int16) (*TStruct, error) {
 	fieldName, err := iprot.ReadStructBegin(cxt)
 	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("%T read struct begin (%d, %s) error: ", fieldId, fieldName), err)
+		return nil, thrift.PrependError(fmt.Sprintf("%T read struct begin (%d, %s) error: ", p, fieldId, fieldName), err)
 	}
 
 	tvalue := make(map[TStructField]TValue)
@@ -190,7 +190,7 @@ func (p *TResponse) Write(cxt context.Context, oprot thrift.TProtocol) error {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 	}
 	if err := oprot.WriteStructEnd(cxt); err != nil {
-		return thrift.PrependError(fmt.Sprintf("write struct end error: ", p), err)
+		return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 	}
 	return nil
 }
