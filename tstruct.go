@@ -61,20 +61,26 @@ func (p *TStruct) WriteField(cxt context.Context, oprot thrift.TProtocol, fid in
 	}
 	if err = oprot.WriteStructBegin(cxt, fname); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) begin error: ", p, fid, fname), err)
+		return
 	}
 
 	// write struct fields recursively
 	for _, f := range slices.SortedFunc(maps.Keys(p.value), func(a, b TStructField) int {
 		return int(a.id) - int(b.id)
 	}) {
-		p.value[f].WriteField(cxt, oprot, f.id, f.name)
+		err = p.value[f].WriteField(cxt, oprot, f.id, f.name)
+		if err != nil {
+			return
+		}
 	}
 
 	if err = oprot.WriteFieldStop(cxt); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) stop error: ", p, fid, fname), err)
+		return
 	}
 	if err = oprot.WriteStructEnd(cxt); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) end error: ", p, fid, fname), err)
+		return
 	}
 	if err = oprot.WriteFieldEnd(cxt); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write field end error %d:%s: ", p, fid, fname), err)

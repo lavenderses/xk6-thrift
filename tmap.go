@@ -92,7 +92,7 @@ func (p *TMap) writeFieldDataKeyValue(cxt context.Context, oprot thrift.TProtoco
 //                    <struct> | <map> | <list> | <set>
 func (p *TMap) writeFieldData(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
 	if o, ok := value.(TString); ok {
-		oprot.WriteString(cxt, o.value)
+		err = oprot.WriteString(cxt, o.value)
 	} else if o, ok := value.(TBool); ok {
 		err = oprot.WriteBool(cxt, o.value)
 	} else {

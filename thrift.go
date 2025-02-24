@@ -3,6 +3,7 @@ package thrift
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"log/slog"
 	"strconv"
 
@@ -31,7 +32,7 @@ func (m *TModule) Echo() {
 	sock := thrift.NewTSocketConf("127.0.0.1:8080", &cfg)
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
-		slog.Error("ERROR: ", err)
+		slog.Error("ERROR while getting transport", slog.Any("error", err))
 		return
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
@@ -42,7 +43,7 @@ func (m *TModule) Echo() {
 
 	err = transport.Open()
 	if err != nil {
-		slog.Error("ERROR: ", err)
+		slog.Error("ERROR while opening transport", slog.Any("error", err))
 		return
 	}
 
@@ -52,7 +53,11 @@ func (m *TModule) Echo() {
 	res := NewTResponse()
 
 	cxt := context.Background()
-	tclient.Call(cxt, method, req, res)
+	_, err = tclient.Call(cxt, method, req, res)
+	if err != nil {
+		slog.Error("ERROR calling RPC", slog.Any("error", err))
+		return
+	}
 
-	slog.Info("Response:", res.values)
+	slog.Info(fmt.Sprint("Response: %v", res))
 }
