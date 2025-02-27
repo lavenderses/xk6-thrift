@@ -112,7 +112,7 @@ func (m *TModule) Call(method string, req *TRequest) *TCallResult {
 		return NewTCallResult(nil, fmt.Errorf("Empty body"))
 	}
 
-	slog.Info("Response:", res.values)
+	slog.Info(fmt.Sprintf("Response: %v", res.values))
 	
 	return NewTCallResult(&body, nil)
 }
