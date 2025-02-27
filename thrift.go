@@ -33,7 +33,7 @@ func (m *TModule) Echo() *TCallResult {
 	sock := thrift.NewTSocketConf("127.0.0.1:8080", &cfg)
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
-		slog.Error("ERROR while getting transport", slog.Any("error", err))
+		slog.Error(fmt.Sprintf("ERROR while getting transport: %v", err))
 		return NewTCallResult(nil, err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
@@ -44,7 +44,7 @@ func (m *TModule) Echo() *TCallResult {
 
 	err = transport.Open()
 	if err != nil {
-		slog.Error("ERROR while opening transport", slog.Any("error", err))
+		slog.Error(fmt.Sprintf("ERROR while opening transport: %v", err))
 		return NewTCallResult(nil, err)
 	}
 
@@ -56,7 +56,7 @@ func (m *TModule) Echo() *TCallResult {
 	cxt := context.Background()
 	_, err = tclient.Call(cxt, method, req, res)
 	if err != nil {
-		slog.Error("ERROR calling RPC", slog.Any("error", err))
+		slog.Error(fmt.Sprintf("ERROR calling RPC: %v", err))
 		return NewTCallResult(nil, err)
 	}
 
@@ -84,7 +84,7 @@ func (m *TModule) Call(method string, req *TRequest) *TCallResult {
 	sock := thrift.NewTSocketConf("127.0.0.1:8080", &cfg)
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
-		slog.Error("ERROR: ", err)
+		slog.Error(fmt.Sprintf("ERROR: %v", err))
 		return NewTCallResult(nil, err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
@@ -95,7 +95,7 @@ func (m *TModule) Call(method string, req *TRequest) *TCallResult {
 
 	err = transport.Open()
 	if err != nil {
-		slog.Error("ERROR: ", err)
+		slog.Error(fmt.Sprintf("ERROR: %v", err))
 		return NewTCallResult(nil, err)
 	}
 
@@ -104,7 +104,7 @@ func (m *TModule) Call(method string, req *TRequest) *TCallResult {
 	cxt := context.Background()
 	_, err = tclient.Call(cxt, method, req, res)
 	if err != nil {
-		slog.Error("ERROR calling RPC", slog.Any("error", err))
+		slog.Error(fmt.Sprintf("ERROR calling RPC: %v", err))
 		return NewTCallResult(nil, err)
 	}
 	body := res.values[0]
