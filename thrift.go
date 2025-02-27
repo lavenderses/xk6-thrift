@@ -18,7 +18,7 @@ func init() {
 
 type TModule struct{}
 
-func (m *TModule) Echo() {
+func (m *TModule) Echo() *TCallResult {
 	host := "127.0.0.1"
 	port := 8080
 	path := "/thrift"
@@ -33,8 +33,8 @@ func (m *TModule) Echo() {
 	sock := thrift.NewTSocketConf("127.0.0.1:8080", &cfg)
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
-		slog.Error("ERROR while getting transport", slog.Any("error", err))
-		return
+		slog.Error(fmt.Sprintf("ERROR while getting transport: %v", err))
+		return NewTCallResult(nil, err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
 	iprot := pf.GetProtocol(transport)
@@ -44,8 +44,8 @@ func (m *TModule) Echo() {
 
 	err = transport.Open()
 	if err != nil {
-		slog.Error("ERROR while opening transport", slog.Any("error", err))
-		return
+		slog.Error(fmt.Sprintf("ERROR while opening transport: %v", err))
+		return NewTCallResult(nil, err)
 	}
 
 	values := make(map[int16]TValue)
@@ -56,14 +56,21 @@ func (m *TModule) Echo() {
 	cxt := context.Background()
 	_, err = tclient.Call(cxt, method, req, res)
 	if err != nil {
-		slog.Error("ERROR calling RPC", slog.Any("error", err))
-		return
+		slog.Error(fmt.Sprintf("ERROR calling RPC: %v", err))
+		return NewTCallResult(nil, err)
 	}
 
 	slog.Info(fmt.Sprintf("Response: %v", res))
+
+	body := res.values[0]
+	if body == nil {
+		return NewTCallResult(nil, fmt.Errorf("Empty body"))
+	}
+	
+	return NewTCallResult(&body, nil)
 }
 
-func (m *TModule) Call(method string, req *TRequest) {
+func (m *TModule) Call(method string, req *TRequest) *TCallResult {
 	host := "127.0.0.1"
 	port := 8080
 	path := "/thrift"
@@ -77,8 +84,8 @@ func (m *TModule) Call(method string, req *TRequest) {
 	sock := thrift.NewTSocketConf("127.0.0.1:8080", &cfg)
 	transport, err := tf.GetTransport(sock)
 	if err != nil {
-		slog.Error("ERROR: ", err)
-		return
+		slog.Error(fmt.Sprintf("ERROR: %v", err))
+		return NewTCallResult(nil, err)
 	}
 	pf := thrift.NewTBinaryProtocolFactoryConf(&cfg)
 	iprot := pf.GetProtocol(transport)
@@ -88,14 +95,24 @@ func (m *TModule) Call(method string, req *TRequest) {
 
 	err = transport.Open()
 	if err != nil {
-		slog.Error("ERROR: ", err)
-		return
+		slog.Error(fmt.Sprintf("ERROR: %v", err))
+		return NewTCallResult(nil, err)
 	}
 
 	res := NewTResponse()
 
 	cxt := context.Background()
-	tclient.Call(cxt, method, req, res)
+	_, err = tclient.Call(cxt, method, req, res)
+	if err != nil {
+		slog.Error(fmt.Sprintf("ERROR calling RPC: %v", err))
+		return NewTCallResult(nil, err)
+	}
+	body := res.values[0]
+	if body == nil {
+		return NewTCallResult(nil, fmt.Errorf("Empty body"))
+	}
 
-	slog.Info("Response:", res.values)
+	slog.Info(fmt.Sprintf("Response: %v", res.values))
+	
+	return NewTCallResult(&body, nil)
 }
