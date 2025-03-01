@@ -85,4 +85,18 @@ class Service: TestService.AsyncIface {
         log.info("Respond: $newMaps")
         resultHandler.onComplete(newMaps)
     }
+
+    override fun stringCall(strs: MutableList<String>, resultHandler: AsyncMethodCallback<MutableList<String>>) {
+        log.info("Accept: $strs")
+        val response = strs.map { "$it:$it" }
+        log.info("Respond: $response")
+        resultHandler.onComplete(response.toMutableList())
+    }
+
+    override fun stringsCall(strs: MutableList<Message>, resultHandler: AsyncMethodCallback<MutableList<Message>>) {
+        log.info("Accept: $strs")
+        val response = strs.map { Message("content: ${it.content}", it.tags, it.nested) }
+        log.info("Respond: $response")
+        resultHandler.onComplete(response.toMutableList())
+    }
 }
