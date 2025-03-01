@@ -18,4 +18,8 @@ service TestService {
     Message messageCall(1: Message message);
 
     map<string, bool> mapCall(1: map<string, bool> maps);
+
+    list<string> stringCall(1: list<string> strs);
+
+    list<Message> stringsCall(1: list<Message> strs);
 }
