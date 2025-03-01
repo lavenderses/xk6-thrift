@@ -141,6 +141,60 @@
           ],
           "exceptions": [
           ]
+        },
+        {
+          "name": "stringCall",
+          "returnTypeId": "list",
+          "returnType": {
+            "typeId": "list",
+            "elemTypeId": "string"
+          },
+          "oneway": false,
+          "arguments": [
+            {
+              "key": 1,
+              "name": "strs",
+              "typeId": "list",
+              "type": {
+                "typeId": "list",
+                "elemTypeId": "string"
+              },
+              "required": "req_out"
+            }
+          ],
+          "exceptions": [
+          ]
+        },
+        {
+          "name": "stringsCall",
+          "returnTypeId": "list",
+          "returnType": {
+            "typeId": "list",
+            "elemTypeId": "struct",
+            "elemType": {
+              "typeId": "struct",
+              "class": "Message"
+            }
+          },
+          "oneway": false,
+          "arguments": [
+            {
+              "key": 1,
+              "name": "strs",
+              "typeId": "list",
+              "type": {
+                "typeId": "list",
+                "elemTypeId": "struct",
+                "elemType": {
+                  "typeId": "struct",
+                  "class": "Message"
+                }
+              },
+              "required": "req_out"
+            }
+          ],
+          "exceptions": [
+          ]
         }
       ]
     }

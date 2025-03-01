@@ -26,6 +26,8 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "  bool boolCall(bool tf)")
   fmt.Fprintln(os.Stderr, "  Message messageCall(Message message)")
   fmt.Fprintln(os.Stderr, "   mapCall( maps)")
+  fmt.Fprintln(os.Stderr, "   stringCall( strs)")
+  fmt.Fprintln(os.Stderr, "   stringsCall( strs)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -173,19 +175,19 @@ func main() {
       fmt.Fprintln(os.Stderr, "MessageCall requires 1 args")
       flag.Usage()
     }
-    arg32 := flag.Arg(1)
-    mbTrans33 := thrift.NewTMemoryBufferLen(len(arg32))
-    defer mbTrans33.Close()
-    _, err34 := mbTrans33.WriteString(arg32)
-    if err34 != nil {
+    arg46 := flag.Arg(1)
+    mbTrans47 := thrift.NewTMemoryBufferLen(len(arg46))
+    defer mbTrans47.Close()
+    _, err48 := mbTrans47.WriteString(arg46)
+    if err48 != nil {
       Usage()
       return
     }
-    factory35 := thrift.NewTJSONProtocolFactory()
-    jsProt36 := factory35.GetProtocol(mbTrans33)
+    factory49 := thrift.NewTJSONProtocolFactory()
+    jsProt50 := factory49.GetProtocol(mbTrans47)
     argvalue0 := idl.NewMessage()
-    err37 := argvalue0.Read(context.Background(), jsProt36)
-    if err37 != nil {
+    err51 := argvalue0.Read(context.Background(), jsProt50)
+    if err51 != nil {
       Usage()
       return
     }
@@ -198,25 +200,77 @@ func main() {
       fmt.Fprintln(os.Stderr, "MapCall requires 1 args")
       flag.Usage()
     }
-    arg38 := flag.Arg(1)
-    mbTrans39 := thrift.NewTMemoryBufferLen(len(arg38))
-    defer mbTrans39.Close()
-    _, err40 := mbTrans39.WriteString(arg38)
-    if err40 != nil { 
+    arg52 := flag.Arg(1)
+    mbTrans53 := thrift.NewTMemoryBufferLen(len(arg52))
+    defer mbTrans53.Close()
+    _, err54 := mbTrans53.WriteString(arg52)
+    if err54 != nil { 
       Usage()
       return
     }
-    factory41 := thrift.NewTJSONProtocolFactory()
-    jsProt42 := factory41.GetProtocol(mbTrans39)
+    factory55 := thrift.NewTJSONProtocolFactory()
+    jsProt56 := factory55.GetProtocol(mbTrans53)
     containerStruct0 := idl.NewTestServiceMapCallArgs()
-    err43 := containerStruct0.ReadField1(context.Background(), jsProt42)
-    if err43 != nil {
+    err57 := containerStruct0.ReadField1(context.Background(), jsProt56)
+    if err57 != nil {
       Usage()
       return
     }
     argvalue0 := containerStruct0.Maps
     value0 := argvalue0
     fmt.Print(client.MapCall(context.Background(), value0))
+    fmt.Print("\n")
+    break
+  case "stringCall":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "StringCall requires 1 args")
+      flag.Usage()
+    }
+    arg58 := flag.Arg(1)
+    mbTrans59 := thrift.NewTMemoryBufferLen(len(arg58))
+    defer mbTrans59.Close()
+    _, err60 := mbTrans59.WriteString(arg58)
+    if err60 != nil { 
+      Usage()
+      return
+    }
+    factory61 := thrift.NewTJSONProtocolFactory()
+    jsProt62 := factory61.GetProtocol(mbTrans59)
+    containerStruct0 := idl.NewTestServiceStringCallArgs()
+    err63 := containerStruct0.ReadField1(context.Background(), jsProt62)
+    if err63 != nil {
+      Usage()
+      return
+    }
+    argvalue0 := containerStruct0.Strs
+    value0 := argvalue0
+    fmt.Print(client.StringCall(context.Background(), value0))
+    fmt.Print("\n")
+    break
+  case "stringsCall":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "StringsCall requires 1 args")
+      flag.Usage()
+    }
+    arg64 := flag.Arg(1)
+    mbTrans65 := thrift.NewTMemoryBufferLen(len(arg64))
+    defer mbTrans65.Close()
+    _, err66 := mbTrans65.WriteString(arg64)
+    if err66 != nil { 
+      Usage()
+      return
+    }
+    factory67 := thrift.NewTJSONProtocolFactory()
+    jsProt68 := factory67.GetProtocol(mbTrans65)
+    containerStruct0 := idl.NewTestServiceStringsCallArgs()
+    err69 := containerStruct0.ReadField1(context.Background(), jsProt68)
+    if err69 != nil {
+      Usage()
+      return
+    }
+    argvalue0 := containerStruct0.Strs
+    value0 := argvalue0
+    fmt.Print(client.StringsCall(context.Background(), value0))
     fmt.Print("\n")
     break
   case "":
