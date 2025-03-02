@@ -44,6 +44,8 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 				v, err = p.ReadString(cxt, iprot, fieldId)
 			case thrift.BOOL:
 				v, err = p.ReadBool(cxt, iprot, fieldId)
+			case thrift.LIST:
+				v, err = p.ReadList(cxt, iprot, fieldId)
 			case thrift.MAP:
 				v, err = p.ReadMap(cxt, iprot, fieldId)
 			case thrift.STRUCT:
@@ -114,6 +116,45 @@ func (p *TResponse) readFeidlDataList(cxt context.Context, iprot thrift.TProtoco
 }
 
 func (p *TResponse) readField(cxt context.Context, iprot thrift.TProtocol, ttype thrift.TType) (tv TValue, err error) {
+	switch ttype {
+	case thrift.STRING:
+		if v, err := iprot.ReadString(cxt); err != nil {
+			return nil, err
+		} else {
+			tv = NewTstring(v)
+		}
+	case thrift.BOOL:
+		if v, err := iprot.ReadBool(cxt); err != nil {
+			return nil, err
+		} else {
+			tv = NewTBool(v)
+		}
+	}
+
+	return
+}
+
+func (p *TResponse) ReadList(cxt context.Context, iproto thrift.TProtocol, fieldId int16) (*TList, error) {
+	valueType, size, err := iproto.ReadListBegin(cxt)
+	if err != nil {
+		return nil, thrift.PrependError(fmt.Sprintf("error reading list field %d: ", fieldId), err)
+	}
+
+	var tlist []TValue
+	for i := 0; i < size; i++ {
+		var tv TValue
+		tv, err = p.readListField(cxt, iproto, valueType)
+		if err != nil {
+			return nil, thrift.PrependError(fmt.Sprintf("error reading list %d: ", fieldId), err)
+		}
+		tlist = append(tlist, tv)
+	}
+
+	res := NewTList(&tlist, valueType)
+	return res, nil
+}
+
+func (p *TResponse) readListField(cxt context.Context, iprot thrift.TProtocol, ttype thrift.TType) (tv TValue, err error) {
 	switch ttype {
 	case thrift.STRING:
 		if v, err := iprot.ReadString(cxt); err != nil {
