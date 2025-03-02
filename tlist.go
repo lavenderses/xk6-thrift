@@ -51,36 +51,16 @@ func (p *TList) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err
 	}
 
 	for _, v := range p.value {
-		// if err = v.WriteField(cxt, oprot, fid, fname); err != nil {
-		// 	err = thrift.PrependError(fmt.Sprintf("%T write list field data (field %d) error", p, fid), err)
-		// 	return
-		// }
-		if err = p.writeFieldData(cxt, oprot, v); err != nil {
+		//	<field-data>     ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+		//			<struct> | <map> | <list> | <set>
+		if err = v.WriteFieldData(cxt, oprot); err != nil {
 			err = thrift.PrependError(fmt.Sprintf("%T write list field data error", p), err)
-			return
 		}
 	}
 
 	if err = oprot.WriteListEnd(cxt); err != nil {
 		err = thrift.PrependError(fmt.Sprintf("%T write list end error", p), err)
 		return
-	}
-	return
-}
-
-// See the above spec.
-//
-//	<field-data>     ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//			<struct> | <map> | <list> | <set>
-func (p *TList) writeFieldData(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
-	if o, ok := value.(TString); ok {
-		err = oprot.WriteString(cxt, o.value)
-	} else if o, ok := value.(TBool); ok {
-		err = oprot.WriteBool(cxt, o.value)
-	} else if o, ok := value.(*TMap); ok {
-		err = o.WriteFieldData(cxt, oprot)
-	} else if o, ok := value.(*TStruct); ok {
-		err = o.WriteFieldData(cxt, oprot)
 	}
 	return
 }

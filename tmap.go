@@ -49,8 +49,15 @@ func (p *TMap) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err 
 	}
 
 	for k, v := range p.value {
-		if err = p.writeFieldDataKeyValue(cxt, oprot, k, v); err != nil {
-			err = thrift.PrependError(fmt.Sprintf("%T write key value error", p), err)
+		//	<map>        ::= <map-begin> <field-data>* <map-end>
+		//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+		//			<struct> | <map> | <list> | <set>
+		if err = k.WriteFieldData(cxt, oprot); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write key error", p), err)
+			return
+		}
+		if err = v.WriteFieldData(cxt, oprot); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write value error", p), err)
 			return
 		}
 	}
@@ -60,36 +67,6 @@ func (p *TMap) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err 
 		return
 	}
 
-	return
-}
-
-// See the above spec.
-//
-//	<map>        ::= <map-begin> <field-data>* <map-end>
-//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//			<struct> | <map> | <list> | <set>
-func (p *TMap) writeFieldDataKeyValue(cxt context.Context, oprot thrift.TProtocol, k, v TValue) (err error) {
-	if err = p.writeFieldData(cxt, oprot, k); err != nil {
-		return
-	}
-	if err = p.writeFieldData(cxt, oprot, v); err != nil {
-		return
-	}
-	return
-}
-
-// See the above spec.
-//
-//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//			<struct> | <map> | <list> | <set>
-func (p *TMap) writeFieldData(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
-	if o, ok := value.(TString); ok {
-		err = oprot.WriteString(cxt, o.value)
-	} else if o, ok := value.(TBool); ok {
-		err = oprot.WriteBool(cxt, o.value)
-	} else {
-		return
-	}
 	return
 }
 
