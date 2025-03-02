@@ -239,3 +239,93 @@ func TestStringCall(t *testing.T) {
 
 	assertEquals(t, *actual, *expect)
 }
+
+func TestStringsCall(t *testing.T) {
+	// prepare
+	var client *thrift.TStandardClient
+	var err error
+	if client, err = setupClient(t); err != nil {
+		t.Fatalf("error creating client. %v", err)
+	}
+
+	cxt := context.Background()
+	method := "stringsCall"
+
+	msg1 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
+		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("content 1"),
+		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+			&map[xk6_thrift.TValue]xk6_thrift.TValue{
+				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
+			},
+		),
+		*xk6_thrift.NewTStructField(3, "nested"): xk6_thrift.NewTStruct(
+			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
+				*xk6_thrift.NewTStructField(1, "inner"): xk6_thrift.NewTstring("inner content 1"),
+			},
+		),
+	}
+	msg2 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
+		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("content 2"),
+		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+			&map[xk6_thrift.TValue]xk6_thrift.TValue{
+				xk6_thrift.NewTstring("bool false"):  xk6_thrift.NewTBool(false),
+			},
+		),
+		*xk6_thrift.NewTStructField(3, "nested"): xk6_thrift.NewTStruct(
+			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
+				*xk6_thrift.NewTStructField(1, "inner"): xk6_thrift.NewTstring("inner content 2"),
+			},
+		),
+	}
+	tmsg := []xk6_thrift.TValue{
+		xk6_thrift.NewTStruct(&msg1),
+		xk6_thrift.NewTStruct(&msg2),
+	}
+	tvalue := map[int16]xk6_thrift.TValue{
+		1: xk6_thrift.NewTList(&tmsg, thrift.STRUCT),
+	}
+	arg := xk6_thrift.NewTRequestWithValue(&tvalue)
+
+	exChange := "content: "
+	exMsg1 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
+		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring(exChange + "content 1"),
+		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
+			&map[xk6_thrift.TValue]xk6_thrift.TValue{
+				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
+			},
+		),
+		*xk6_thrift.NewTStructField(3, ""): xk6_thrift.NewTStruct(
+			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
+				*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("inner content 1"),
+			},
+		),
+	}
+	exMsg2 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
+		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring(exChange + "content 2"),
+		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
+			&map[xk6_thrift.TValue]xk6_thrift.TValue{
+				xk6_thrift.NewTstring("bool false"):  xk6_thrift.NewTBool(false),
+			},
+		),
+		*xk6_thrift.NewTStructField(3, ""): xk6_thrift.NewTStruct(
+			&map[xk6_thrift.TStructField]xk6_thrift.TValue{
+				*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("inner content 2"),
+			},
+		),
+	}
+	expectValue := []xk6_thrift.TValue{
+		xk6_thrift.NewTStruct(&exMsg1),
+		xk6_thrift.NewTStruct(&exMsg2),
+	}
+	expectTValue := xk6_thrift.NewTList(&expectValue, thrift.STRUCT)
+	expect := xk6_thrift.NewTResponse()
+	expect.Add(0, expectTValue)
+	actual := xk6_thrift.NewTResponse()
+
+	// do & verify
+	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
+		t.Fatalf("error calling RPC. %v", err)
+	}
+
+	assertEquals(t, *actual, *expect)
+}
