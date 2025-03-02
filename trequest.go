@@ -52,7 +52,18 @@ func (p *TRequest) writeFields(cxt context.Context, oprot thrift.TProtocol) (err
 	}
 
 	for fid, v := range p.values {
-		if err = v.WriteField(cxt, oprot, fid, "dummy"); err != nil {
+		ttype := v.TType()
+		fname := "dummy"
+
+		if err = oprot.WriteFieldBegin(cxt, fname, ttype, fid); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s: ", p, fid, fname), err)
+			return
+		}
+		if err = v.WriteFieldData(cxt, oprot); err != nil {
+			return
+		}
+		if err = oprot.WriteFieldEnd(cxt); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write field end error %d:%s: ", p, fid, fname), err)
 			return
 		}
 	}
