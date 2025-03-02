@@ -41,7 +41,7 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 			var v TValue
 			switch fieldTypeId {
 			case thrift.STRING:
-				v, err = p.ReadString(cxt, iprot, fieldId)
+				v, err = ReadString(cxt, iprot)
 			case thrift.BOOL:
 				v, err = ReadBool(cxt, iprot)
 			case thrift.LIST:
@@ -62,16 +62,6 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 	}
 
 	return nil
-}
-
-func (p *TResponse) ReadString(cxt context.Context, iproto thrift.TProtocol, fieldId int16) (*TString, error) {
-	v, err := iproto.ReadString(cxt)
-	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("error reading string field %d: ", fieldId), err)
-	}
-
-	res := NewTstring(v)
-	return &res, nil
 }
 
 func (p *TResponse) ReadMap(cxt context.Context, iproto thrift.TProtocol, fieldId int16) (*TMap, error) {
@@ -183,7 +173,7 @@ func (p *TResponse) ReadStruct(cxt context.Context, iprot thrift.TProtocol, fiel
 		// slog.Info(fmt.Sprintf("GOT %s, %v, %d", fieldName, fieldTypeId, fieldId))
 		switch ftype {
 		case thrift.STRING:
-			tv, err = p.ReadString(cxt, iprot, fid)
+			tv, err = ReadString(cxt, iprot)
 		case thrift.BOOL:
 			tv, err = ReadBool(cxt, iprot)
 		case thrift.MAP:
