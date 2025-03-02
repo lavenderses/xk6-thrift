@@ -95,3 +95,43 @@ func (p *TStruct) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (e
 func (p *TStruct) TType() thrift.TType {
 	return thrift.STRUCT
 }
+
+func ReadStruct(cxt context.Context, iprot thrift.TProtocol) (TValue, error) {
+	fieldName, err := iprot.ReadStructBegin(cxt)
+	if err != nil {
+		return nil, thrift.PrependError(fmt.Sprintf("error while struct begin (%s)", fieldName), err)
+	}
+
+	tvalue := make(map[TStructField]TValue)
+	for {
+		fname, ftype, fid, err := iprot.ReadFieldBegin(cxt)
+		if err != nil {
+			return nil, thrift.PrependError(fmt.Sprintf("error while reading field begin (%d:%s)", fid, fname), err)
+		}
+		if ftype == thrift.STOP {
+			break
+		}
+
+		var tv TValue
+		tv, err = ReadContainerData(ftype, cxt, iprot)
+		if err != nil {
+			return nil, err
+		}
+
+		err = iprot.ReadFieldEnd(cxt)
+		if err != nil {
+			return nil, err
+		}
+
+		// TODO: somehow fname gecomes an empty string
+		tvalue[*NewTStructField(fid, fname)] = tv
+	}
+
+	err = iprot.ReadStructEnd(cxt)
+	if err != nil {
+		return nil, thrift.PrependError(fmt.Sprintf("error while reading struct end"), err)
+	}
+
+	res := NewTStruct(&tvalue)
+	return res, nil
+}
