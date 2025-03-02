@@ -43,7 +43,7 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 			case thrift.STRING:
 				v, err = p.ReadString(cxt, iprot, fieldId)
 			case thrift.BOOL:
-				v, err = p.ReadBool(cxt, iprot, fieldId)
+				v, err = ReadBool(cxt, iprot)
 			case thrift.LIST:
 				v, err = p.ReadList(cxt, iprot, fieldId)
 			case thrift.MAP:
@@ -71,16 +71,6 @@ func (p *TResponse) ReadString(cxt context.Context, iproto thrift.TProtocol, fie
 	}
 
 	res := NewTstring(v)
-	return &res, nil
-}
-
-func (p *TResponse) ReadBool(cxt context.Context, iproto thrift.TProtocol, fieldId int16) (*TBool, error) {
-	v, err := iproto.ReadBool(cxt)
-	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("error reading boolean field %d: ", fieldId), err)
-	}
-
-	res := NewTBool(v)
 	return &res, nil
 }
 
@@ -195,7 +185,7 @@ func (p *TResponse) ReadStruct(cxt context.Context, iprot thrift.TProtocol, fiel
 		case thrift.STRING:
 			tv, err = p.ReadString(cxt, iprot, fid)
 		case thrift.BOOL:
-			tv, err = p.ReadBool(cxt, iprot, fid)
+			tv, err = ReadBool(cxt, iprot)
 		case thrift.MAP:
 			tv, err = p.ReadMap(cxt, iprot, fid)
 		case thrift.STRUCT:
