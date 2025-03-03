@@ -82,11 +82,11 @@ func (p *TStruct) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (e
 	}
 
 	if err = oprot.WriteFieldStop(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) stop error: ", p), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write struct stop error: ", p), err)
 		return
 	}
 	if err = oprot.WriteStructEnd(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) end error: ", p), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 		return
 	}
 	return

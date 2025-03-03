@@ -55,6 +55,7 @@ func (p *TList) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err
 		//			<struct> | <map> | <list> | <set>
 		if err = v.WriteFieldData(cxt, oprot); err != nil {
 			err = thrift.PrependError(fmt.Sprintf("%T write list field data error", p), err)
+			return
 		}
 	}
 
