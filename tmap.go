@@ -36,67 +36,40 @@ func (p *TMap) Equals(other *TValue) bool {
 
 // See [Thrift IDL protocol spec]
 //
-//   <field>      ::= <field-begin> <map> <field-end>
-//   <map>        ::= <map-begin> <field-data>* <map-end>
-//   <field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//                    <struct> | <map> | <list> | <set>
+//	<field>      ::= <field-begin> <map> <field-end>
+//	<map>        ::= <map-begin> <field-data>* <map-end>
+//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+//	                 <struct> | <map> | <list> | <set>
 //
 // [Thrift IDL protocol spec]: https://github.com/apache/thrift/blob/eec0b584e657e4250e22f3fd492858d632e2aa7b/doc/specs/thrift-protocol-spec.md
-func (p *TMap) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
-	if err = oprot.WriteFieldBegin(cxt, fname, thrift.MAP, fid); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s: ", p, fid, fname), err)
-		return
-	}
+func (p *TMap) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteMapBegin(cxt, p.keyType, p.valueType, len(p.value)); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write map begin error %d:%s", p, fid, fname), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write map begin error", p), err)
 		return
 	}
 
 	for k, v := range p.value {
-		if err = p.writeFieldDataKeyValue(cxt, oprot, k, v); err != nil {
-			err = thrift.PrependError(fmt.Sprintf("%T write key value (field %d) error", p, fid), err)
+		//	<map>        ::= <map-begin> <field-data>* <map-end>
+		//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+		//			<struct> | <map> | <list> | <set>
+		if err = k.WriteFieldData(cxt, oprot); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write key error", p), err)
+			return
+		}
+		if err = v.WriteFieldData(cxt, oprot); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write value error", p), err)
 			return
 		}
 	}
 
 	if err = oprot.WriteMapEnd(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write map end error %d:%s", p, fid, fname), err)
-		return
-	}
-	if err = oprot.WriteFieldEnd(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write field end error %d:%s: ", p, fid, fname), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write map end error", p), err)
 		return
 	}
 
 	return
 }
 
-// See the above spec.
-//
-//   <map>        ::= <map-begin> <field-data>* <map-end>
-//   <field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//                    <struct> | <map> | <list> | <set>
-func (p *TMap) writeFieldDataKeyValue(cxt context.Context, oprot thrift.TProtocol, k, v TValue) (err error) {
-	if err = p.writeFieldData(cxt, oprot, k); err != nil {
-		return
-	}
-	if err = p.writeFieldData(cxt, oprot, v); err != nil {
-		return
-	}
-	return
-}
-
-// See the above spec.
-//
-//   <field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//                    <struct> | <map> | <list> | <set>
-func (p *TMap) writeFieldData(cxt context.Context, oprot thrift.TProtocol, value TValue) (err error) {
-	if o, ok := value.(TString); ok {
-		err = oprot.WriteString(cxt, o.value)
-	} else if o, ok := value.(TBool); ok {
-		err = oprot.WriteBool(cxt, o.value)
-	} else {
-		return
-	}
-	return
+func (p *TMap) TType() thrift.TType {
+	return thrift.MAP
 }

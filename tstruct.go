@@ -49,18 +49,15 @@ func (p *TStruct) Equals(other *TValue) bool {
 // see [Thrift protocol spec @ 1a31d90 (v0.21.0)].
 //
 //	<field> ::= <field-begin> <field-data> <field-end>
-//		<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
-//	<struct> | <map> | <list> | <set>
+//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
+//			<struct> | <map> | <list> | <set>
 //	<struct> ::= <struct-begin> <field>* <field-stop> <struct-end>
 //
 // [Thrift protocol spec @ 1a31d90 (v0.21.0)]: https://github.com/apache/thrift/blob/1a31d9051d35b732a5fce258955ef95f576694ba/doc/specs/thrift-protocol-spec.md (v0.21.0)
-func (p *TStruct) WriteField(cxt context.Context, oprot thrift.TProtocol, fid int16, fname string) (err error) {
-	if err = oprot.WriteFieldBegin(cxt, fname, thrift.STRUCT, fid); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s: ", p, fid, fname), err)
-		return
-	}
-	if err = oprot.WriteStructBegin(cxt, fname); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) begin error: ", p, fid, fname), err)
+func (p *TStruct) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err error) {
+	structName := "dummy"
+	if err = oprot.WriteStructBegin(cxt, structName); err != nil {
+		err = thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
 		return
 	}
 
@@ -68,23 +65,33 @@ func (p *TStruct) WriteField(cxt context.Context, oprot thrift.TProtocol, fid in
 	for _, f := range slices.SortedFunc(maps.Keys(p.value), func(a, b TStructField) int {
 		return int(a.id) - int(b.id)
 	}) {
-		err = p.value[f].WriteField(cxt, oprot, f.id, f.name)
-		if err != nil {
+		v := p.value[f]
+		ttype := v.TType()
+
+		if err = oprot.WriteFieldBegin(cxt, f.name, ttype, f.id); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write field begin error %d:%s", p, f.id, f.name), err)
+			return
+		}
+		if err = v.WriteFieldData(cxt, oprot); err != nil {
+			return
+		}
+		if err = oprot.WriteFieldEnd(cxt); err != nil {
+			err = thrift.PrependError(fmt.Sprintf("%T write field end error %d:%s", p, f.id, f.name), err)
 			return
 		}
 	}
 
 	if err = oprot.WriteFieldStop(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) stop error: ", p, fid, fname), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write struct stop error: ", p), err)
 		return
 	}
 	if err = oprot.WriteStructEnd(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write struct (%d, %s) end error: ", p, fid, fname), err)
-		return
-	}
-	if err = oprot.WriteFieldEnd(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write field end error %d:%s: ", p, fid, fname), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 		return
 	}
 	return
+}
+
+func (p *TStruct) TType() thrift.TType {
+	return thrift.STRUCT
 }
