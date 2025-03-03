@@ -44,7 +44,7 @@ func (p TString) TType() thrift.TType {
 func ReadString(cxt context.Context, iproto thrift.TProtocol) (TValue, error) {
 	v, err := iproto.ReadString(cxt)
 	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("error while reading string field"), err)
+		return nil, thrift.PrependError("error while reading string field", err)
 	}
 
 	res := NewTstring(v)
