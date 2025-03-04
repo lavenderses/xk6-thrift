@@ -40,3 +40,13 @@ func (p TString) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (er
 func (p TString) TType() thrift.TType {
 	return thrift.STRING
 }
+
+func ReadString(cxt context.Context, iproto thrift.TProtocol) (TValue, error) {
+	v, err := iproto.ReadString(cxt)
+	if err != nil {
+		return nil, thrift.PrependError("error while reading string field", err)
+	}
+
+	res := NewTstring(v)
+	return res, nil
+}
