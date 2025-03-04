@@ -47,7 +47,7 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 			case thrift.LIST:
 				v, err = p.ReadList(cxt, iprot, fieldId)
 			case thrift.MAP:
-				v, err = p.ReadMap(cxt, iprot, fieldId)
+				v, err = ReadMap(cxt, iprot)
 			case thrift.STRUCT:
 				v, err = p.ReadStruct(cxt, iprot, fieldId)
 			}
@@ -62,56 +62,6 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 	}
 
 	return nil
-}
-
-func (p *TResponse) ReadMap(cxt context.Context, iproto thrift.TProtocol, fieldId int16) (*TMap, error) {
-	keyType, valueType, size, err := iproto.ReadMapBegin(cxt)
-	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("error reading map field %d: ", fieldId), err)
-	}
-
-	tmap := make(map[TValue]TValue)
-	for i := 0; i < size; i++ {
-		if err = p.readFeidlDataList(cxt, iproto, &tmap, keyType, valueType); err != nil {
-			return nil, thrift.PrependError(fmt.Sprintf("error reading map %d: ", fieldId), err)
-		}
-	}
-
-	res := NewTMap(&tmap)
-	return res, nil
-}
-
-func (p *TResponse) readFeidlDataList(cxt context.Context, iprot thrift.TProtocol, tmap *map[TValue]TValue, ktype, vtype thrift.TType) error {
-	var key, value TValue
-	var err error
-	if key, err = p.readField(cxt, iprot, ktype); err != nil {
-		return err
-	}
-	if value, err = p.readField(cxt, iprot, vtype); err != nil {
-		return err
-	}
-
-	(*tmap)[key] = value
-	return nil
-}
-
-func (p *TResponse) readField(cxt context.Context, iprot thrift.TProtocol, ttype thrift.TType) (tv TValue, err error) {
-	switch ttype {
-	case thrift.STRING:
-		if v, err := iprot.ReadString(cxt); err != nil {
-			return nil, err
-		} else {
-			tv = NewTstring(v)
-		}
-	case thrift.BOOL:
-		if v, err := iprot.ReadBool(cxt); err != nil {
-			return nil, err
-		} else {
-			tv = NewTBool(v)
-		}
-	}
-
-	return
 }
 
 func (p *TResponse) ReadList(cxt context.Context, iproto thrift.TProtocol, fieldId int16) (*TList, error) {
@@ -177,7 +127,7 @@ func (p *TResponse) ReadStruct(cxt context.Context, iprot thrift.TProtocol, fiel
 		case thrift.BOOL:
 			tv, err = ReadBool(cxt, iprot)
 		case thrift.MAP:
-			tv, err = p.ReadMap(cxt, iprot, fid)
+			tv, err = ReadMap(cxt, iprot)
 		case thrift.STRUCT:
 			tv, err = p.ReadStruct(cxt, iprot, fid)
 		default:

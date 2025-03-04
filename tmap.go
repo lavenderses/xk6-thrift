@@ -73,3 +73,34 @@ func (p *TMap) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err 
 func (p *TMap) TType() thrift.TType {
 	return thrift.MAP
 }
+
+func ReadMap(cxt context.Context, iproto thrift.TProtocol) (TValue, error) {
+	keyType, valueType, size, err := iproto.ReadMapBegin(cxt)
+	if err != nil {
+		return nil, thrift.PrependError("error while reading map field", err)
+	}
+
+	tmap := make(map[TValue]TValue)
+	for i := 0; i < size; i++ {
+		if err = readFeidlDataList(cxt, iproto, &tmap, keyType, valueType); err != nil {
+			return nil, thrift.PrependError("error while reading map", err)
+		}
+	}
+
+	res := NewTMap(&tmap)
+	return res, nil
+}
+
+func readFeidlDataList(cxt context.Context, iprot thrift.TProtocol, tmap *map[TValue]TValue, ktype, vtype thrift.TType) error {
+	var key, value TValue
+	var err error
+	if key, err = ReadContainerData(ktype, cxt, iprot); err != nil {
+		return err
+	}
+	if value, err = ReadContainerData(vtype, cxt, iprot); err != nil {
+		return err
+	}
+
+	(*tmap)[key] = value
+	return nil
+}
