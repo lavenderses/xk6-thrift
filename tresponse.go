@@ -49,7 +49,7 @@ func (p *TResponse) Read(cxt context.Context, iprot thrift.TProtocol) error {
 			case thrift.MAP:
 				v, err = ReadMap(cxt, iprot)
 			case thrift.STRUCT:
-				v, err = p.ReadStruct(cxt, iprot, fieldId)
+				v, err = ReadStruct(cxt, iprot)
 			}
 			p.values[fieldId] = v
 		default:
@@ -101,58 +101,6 @@ func (p *TResponse) readListField(cxt context.Context, iprot thrift.TProtocol, t
 	}
 
 	return
-}
-
-func (p *TResponse) ReadStruct(cxt context.Context, iprot thrift.TProtocol, fieldId int16) (*TStruct, error) {
-	fieldName, err := iprot.ReadStructBegin(cxt)
-	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("%T read struct begin (%d, %s) error: ", p, fieldId, fieldName), err)
-	}
-
-	tvalue := make(map[TStructField]TValue)
-	for {
-		fname, ftype, fid, err := iprot.ReadFieldBegin(cxt)
-		if err != nil {
-			return nil, thrift.PrependError(fmt.Sprintf("%T field read field begin (%d, %s) error: ", p, fid, fname), err)
-		}
-		if ftype == thrift.STOP {
-			break
-		}
-
-		var tv TValue
-		// slog.Info(fmt.Sprintf("GOT %s, %v, %d", fieldName, fieldTypeId, fieldId))
-		switch ftype {
-		case thrift.STRING:
-			tv, err = ReadString(cxt, iprot)
-		case thrift.BOOL:
-			tv, err = ReadBool(cxt, iprot)
-		case thrift.MAP:
-			tv, err = ReadMap(cxt, iprot)
-		case thrift.STRUCT:
-			tv, err = p.ReadStruct(cxt, iprot, fid)
-		default:
-			err = iprot.Skip(cxt, ftype)
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		err = iprot.ReadFieldEnd(cxt)
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO: somehow fname gecomes an empty string
-		tvalue[*NewTStructField(fid, fname)] = tv
-	}
-
-	err = iprot.ReadStructEnd(cxt)
-	if err != nil {
-		return nil, thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-	}
-
-	res := NewTStruct(&tvalue)
-	return res, nil
 }
 
 // dummy.
