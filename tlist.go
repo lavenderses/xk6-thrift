@@ -69,3 +69,23 @@ func (p *TList) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err
 func (p *TList) TType() thrift.TType {
 	return thrift.LIST
 }
+
+func ReadList(cxt context.Context, iprot thrift.TProtocol) (TValue, error) {
+	valueType, size, err := iprot.ReadListBegin(cxt)
+	if err != nil {
+		return nil, thrift.PrependError("error while reading list begin", err)
+	}
+
+	var tlist []TValue
+	for i := 0; i < size; i++ {
+		var tv TValue
+		tv, err = ReadContainerData(valueType, cxt, iprot)
+		if err != nil {
+			return nil, thrift.PrependError("error reading list field", err)
+		}
+		tlist = append(tlist, tv)
+	}
+
+	res := NewTList(&tlist, valueType)
+	return res, nil
+}

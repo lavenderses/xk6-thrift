@@ -15,6 +15,8 @@ func ReadContainerData(ttype thrift.TType, cxt context.Context, iprot thrift.TPr
 		tv, err = ReadString(cxt, iprot)
 	case thrift.BOOL:
 		tv, err = ReadBool(cxt, iprot)
+	case thrift.LIST:
+		tv, err = ReadList(cxt, iprot)
 	case thrift.MAP:
 		tv, err = ReadMap(cxt, iprot)
 	case thrift.STRUCT:
