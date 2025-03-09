@@ -8,8 +8,7 @@ import (
 func TestEquals_TBool_equals(t *testing.T) {
 	// prepare
 	a := NewTBool(true)
-	var b TValue
-	b = NewTBool(true)
+	var b TValue = NewTBool(true)
 	expected := true
 
 	// do
@@ -22,8 +21,7 @@ func TestEquals_TBool_equals(t *testing.T) {
 func TestEquals_TBool_not_equals(t *testing.T) {
 	// prepare
 	a := NewTBool(true)
-	var b TValue
-	b = NewTBool(false)
+	var b TValue = NewTBool(false)
 	expected := false
 
 	// do
@@ -36,8 +34,7 @@ func TestEquals_TBool_not_equals(t *testing.T) {
 func TestEquals_TBool_other_type(t *testing.T) {
 	// prepare
 	a := NewTBool(true)
-	var b TValue
-	b = NewTstring("other")
+	var b TValue = NewTstring("other")
 	expected := false
 
 	// do
@@ -69,8 +66,14 @@ func TestReadBool_true(t *testing.T) {
 	// prepare
 	iprot := setupProtocol(t)
 	cxt := context.Background()
-	iprot.WriteBool(cxt, true)
-	iprot.Flush(cxt)
+	checkError(
+		t,
+		iprot.WriteBool(cxt, true),
+	)
+	checkError(
+		t,
+		iprot.Flush(cxt),
+	)
 
 	// do
 	actual, err := ReadBool(cxt, iprot)
@@ -87,8 +90,14 @@ func TestReadBool_false(t *testing.T) {
 	// prepare
 	iprot := setupProtocol(t)
 	cxt := context.Background()
-	iprot.WriteBool(cxt, false)
-	iprot.Flush(cxt)
+	checkError(
+		t,
+		iprot.WriteBool(cxt, false),
+	)
+	checkError(
+		t,
+		iprot.Flush(cxt),
+	)
 
 	// do
 	actual, err := ReadBool(cxt, iprot)
@@ -105,8 +114,14 @@ func TestReadBool_invalid_type(t *testing.T) {
 	// prepare
 	iprot := setupProtocol(t)
 	cxt := context.Background()
-	iprot.WriteString(cxt, "FOO")
-	iprot.Flush(cxt)
+	checkError(
+		t,
+		iprot.WriteString(cxt, "FOO"),
+	)
+	checkError(
+		t,
+		iprot.Flush(cxt),
+	)
 
 	// do
 	_, err := ReadBool(cxt, iprot)
