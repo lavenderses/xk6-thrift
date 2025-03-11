@@ -342,8 +342,7 @@ func TestReadBool_Invalid_type(t *testing.T) {
 	iprot := setupProtocol(t)
 	cxt := context.Background()
 	{
-		var err error
-		err = iprot.WriteString(cxt, "other")
+		err := iprot.WriteString(cxt, "other")
 		checkError(t, err)
 	}
 
