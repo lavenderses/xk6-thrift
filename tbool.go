@@ -36,6 +36,7 @@ func (p TBool) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err 
 	}
 	return
 }
+
 func (p TBool) TType() thrift.TType {
 	return thrift.BOOL
 }
@@ -43,7 +44,7 @@ func (p TBool) TType() thrift.TType {
 func ReadBool(cxt context.Context, iprot thrift.TProtocol) (TValue, error) {
 	v, err := iprot.ReadBool(cxt)
 	if err != nil {
-		return nil, thrift.PrependError("error while reading boolean", err)
+		return nil, thrift.PrependError("error while reading boolean: ", err)
 	}
 
 	res := NewTBool(v)
