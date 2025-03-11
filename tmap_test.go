@@ -17,8 +17,7 @@ func TestEquals_Equals(t *testing.T) {
 			NewTstring("key 2"): NewTBool(true),
 		},
 	)
-	var b TValue
-	b = NewTMap(
+	var b TValue = NewTMap(
 		thrift.STRING,
 		thrift.BOOL,
 		&map[TValue]TValue{
@@ -45,8 +44,7 @@ func TestEquals_DifferentValue(t *testing.T) {
 			NewTstring("key 2"): NewTBool(true),
 		},
 	)
-	var b TValue
-	b = NewTMap(
+	var b TValue = NewTMap(
 		thrift.STRING,
 		thrift.BOOL,
 		&map[TValue]TValue{
@@ -73,8 +71,7 @@ func TestEquals_DifferentKeyValueCount(t *testing.T) {
 			NewTstring("key 2"): NewTBool(false),
 		},
 	)
-	var b TValue
-	b = NewTMap(
+	var b TValue = NewTMap(
 		thrift.STRING,
 		thrift.BOOL,
 		&map[TValue]TValue{
@@ -101,8 +98,7 @@ func TestEquals_OtherKeyValueType(t *testing.T) {
 			NewTstring("key 1"): NewTBool(false),
 		},
 	)
-	var b TValue
-	b = NewTMap(
+	var b TValue = NewTMap(
 		thrift.BOOL,
 		thrift.STRING,
 		&map[TValue]TValue{
@@ -128,8 +124,7 @@ func TestEquals_OtherType(t *testing.T) {
 			NewTstring("key 2"): NewTBool(true),
 		},
 	)
-	var b TValue
-	b = NewTstring("other")
+	var b TValue = NewTstring("other")
 	expected := false
 
 	// do
