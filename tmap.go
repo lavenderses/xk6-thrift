@@ -13,8 +13,8 @@ type TMap struct {
 	valueType thrift.TType
 }
 
-func NewTMap(v *map[TValue]TValue) *TMap {
-	return &TMap{value: *v}
+func NewTMap(keyType, valueType thrift.TType, v *map[TValue]TValue) *TMap {
+	return &TMap{value: *v, keyType: keyType, valueType: valueType}
 }
 
 func (p *TMap) Equals(other *TValue) bool {
@@ -44,7 +44,7 @@ func (p *TMap) Equals(other *TValue) bool {
 // [Thrift IDL protocol spec]: https://github.com/apache/thrift/blob/eec0b584e657e4250e22f3fd492858d632e2aa7b/doc/specs/thrift-protocol-spec.md
 func (p *TMap) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteMapBegin(cxt, p.keyType, p.valueType, len(p.value)); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write map begin error", p), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write map begin error: ", p), err)
 		return
 	}
 
@@ -53,17 +53,17 @@ func (p *TMap) WriteFieldData(cxt context.Context, oprot thrift.TProtocol) (err 
 		//	<field-data> ::= I8 | I16 | I32 | I64 | DOUBLE | STRING | BINARY
 		//			<struct> | <map> | <list> | <set>
 		if err = k.WriteFieldData(cxt, oprot); err != nil {
-			err = thrift.PrependError(fmt.Sprintf("%T write key error", p), err)
+			err = thrift.PrependError(fmt.Sprintf("%T write key error: ", p), err)
 			return
 		}
 		if err = v.WriteFieldData(cxt, oprot); err != nil {
-			err = thrift.PrependError(fmt.Sprintf("%T write value error", p), err)
+			err = thrift.PrependError(fmt.Sprintf("%T write value error: ", p), err)
 			return
 		}
 	}
 
 	if err = oprot.WriteMapEnd(cxt); err != nil {
-		err = thrift.PrependError(fmt.Sprintf("%T write map end error", p), err)
+		err = thrift.PrependError(fmt.Sprintf("%T write map end error: ", p), err)
 		return
 	}
 
@@ -77,17 +77,17 @@ func (p *TMap) TType() thrift.TType {
 func ReadMap(cxt context.Context, iproto thrift.TProtocol) (TValue, error) {
 	keyType, valueType, size, err := iproto.ReadMapBegin(cxt)
 	if err != nil {
-		return nil, thrift.PrependError("error while reading map field", err)
+		return nil, thrift.PrependError("error while reading map field: ", err)
 	}
 
 	tmap := make(map[TValue]TValue)
 	for i := 0; i < size; i++ {
 		if err = readFeidlDataList(cxt, iproto, &tmap, keyType, valueType); err != nil {
-			return nil, thrift.PrependError("error while reading map", err)
+			return nil, thrift.PrependError("error while reading map: ", err)
 		}
 	}
 
-	res := NewTMap(&tmap)
+	res := NewTMap(keyType, valueType, &tmap)
 	return res, nil
 }
 

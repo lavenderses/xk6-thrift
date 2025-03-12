@@ -130,14 +130,14 @@ func TestMapCall(t *testing.T) {
 		xk6_thrift.NewTstring("key 2"): xk6_thrift.NewTBool(false),
 	}
 	tvalue := map[int16]xk6_thrift.TValue{
-		1: xk6_thrift.NewTMap(&value),
+		1: xk6_thrift.NewTMap(thrift.STRING, thrift.BOOL, &value),
 	}
 	arg := xk6_thrift.NewTRequestWithValue(&tvalue)
 	expectValue := map[xk6_thrift.TValue]xk6_thrift.TValue{
 		xk6_thrift.NewTstring("NEW: key 1"): xk6_thrift.NewTBool(true),
 		xk6_thrift.NewTstring("NEW: key 2"): xk6_thrift.NewTBool(false),
 	}
-	expectTValue := xk6_thrift.NewTMap(&expectValue)
+	expectTValue := xk6_thrift.NewTMap(thrift.STRING, thrift.BOOL, &expectValue)
 	expect := xk6_thrift.NewTResponse()
 	expect.Add(0, expectTValue)
 	actual := xk6_thrift.NewTResponse()
@@ -163,6 +163,8 @@ func TestMessageCall(t *testing.T) {
 	value := map[xk6_thrift.TStructField]xk6_thrift.TValue{
 		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("this is a content"),
 		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+			thrift.STRING,
+			thrift.BOOL,
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
 				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
 				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
@@ -181,6 +183,8 @@ func TestMessageCall(t *testing.T) {
 	expectValue := map[xk6_thrift.TStructField]xk6_thrift.TValue{
 		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring("content: this is a content"),
 		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
+			thrift.STRING,
+			thrift.BOOL,
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
 				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
 				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
@@ -254,8 +258,10 @@ func TestStringsCall(t *testing.T) {
 	msg1 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
 		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("content 1"),
 		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+			thrift.STRING,
+			thrift.BOOL,
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
-				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
+				xk6_thrift.NewTstring("bool true"): xk6_thrift.NewTBool(true),
 			},
 		),
 		*xk6_thrift.NewTStructField(3, "nested"): xk6_thrift.NewTStruct(
@@ -267,8 +273,10 @@ func TestStringsCall(t *testing.T) {
 	msg2 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
 		*xk6_thrift.NewTStructField(1, "content"): xk6_thrift.NewTstring("content 2"),
 		*xk6_thrift.NewTStructField(2, "tags"): xk6_thrift.NewTMap(
+			thrift.STRING,
+			thrift.BOOL,
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
-				xk6_thrift.NewTstring("bool false"):  xk6_thrift.NewTBool(false),
+				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
 			},
 		),
 		*xk6_thrift.NewTStructField(3, "nested"): xk6_thrift.NewTStruct(
@@ -290,8 +298,10 @@ func TestStringsCall(t *testing.T) {
 	exMsg1 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
 		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring(exChange + "content 1"),
 		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
+			thrift.STRING,
+			thrift.BOOL,
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
-				xk6_thrift.NewTstring("bool true"):  xk6_thrift.NewTBool(true),
+				xk6_thrift.NewTstring("bool true"): xk6_thrift.NewTBool(true),
 			},
 		),
 		*xk6_thrift.NewTStructField(3, ""): xk6_thrift.NewTStruct(
@@ -303,8 +313,10 @@ func TestStringsCall(t *testing.T) {
 	exMsg2 := map[xk6_thrift.TStructField]xk6_thrift.TValue{
 		*xk6_thrift.NewTStructField(1, ""): xk6_thrift.NewTstring(exChange + "content 2"),
 		*xk6_thrift.NewTStructField(2, ""): xk6_thrift.NewTMap(
+			thrift.STRING,
+			thrift.BOOL,
 			&map[xk6_thrift.TValue]xk6_thrift.TValue{
-				xk6_thrift.NewTstring("bool false"):  xk6_thrift.NewTBool(false),
+				xk6_thrift.NewTstring("bool false"): xk6_thrift.NewTBool(false),
 			},
 		),
 		*xk6_thrift.NewTStructField(3, ""): xk6_thrift.NewTStruct(
