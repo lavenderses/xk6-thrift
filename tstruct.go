@@ -129,7 +129,7 @@ func ReadStruct(cxt context.Context, iprot thrift.TProtocol) (TValue, error) {
 
 	err = iprot.ReadStructEnd(cxt)
 	if err != nil {
-		return nil, thrift.PrependError("error while reading struct end", err)
+		return nil, thrift.PrependError("error while reading struct end: ", err)
 	}
 
 	res := NewTStruct(&tvalue)
