@@ -1,11 +1,14 @@
 module github.com/lavenderses/xk6-thrift
 
 go 1.23.6
-
-require go.k6.io/k6 v0.56.0
+toolchain go1.24.1
 
 require (
-	github.com/apache/thrift v0.21.0 // indirect
+	github.com/apache/thrift v0.21.0
+	go.k6.io/k6 v0.56.0
+)
+
+require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/evanw/esbuild v0.21.2 // indirect
@@ -35,9 +38,9 @@ require (
 	go.opentelemetry.io/otel/sdk v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240822170219-fc7c04adadcd // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240822170219-fc7c04adadcd // indirect
