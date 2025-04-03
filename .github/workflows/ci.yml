@@ -34,11 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: setup go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -48,13 +43,18 @@ jobs:
       - name: setup gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: install deps
-        run: |
-          go get .
-
       - name: start server
         run:
           ./server/gradlew run -p server/server &
+
+      - name: setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: install deps
+        run: |
+          go get .
 
       - name: wait server gets ready
         timeout-minutes: 5
