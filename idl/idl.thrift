@@ -11,9 +11,9 @@ struct Message {
 }
 
 enum Feature {
-    ONE;
-    TWO;
-    THREE;
+    ONE = 1;
+    TWO = 2;
+    THREE = 3;
 }
 
 service TestService {
