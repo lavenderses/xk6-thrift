@@ -5,6 +5,7 @@ package idl
 import (
 	"bytes"
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"time"
@@ -24,6 +25,62 @@ var _ = bytes.Equal
 var _ = strings.Contains
 var _ = regexp.MatchString
 
+type Feature int64
+const (
+  Feature_ONE Feature = 1
+  Feature_TWO Feature = 2
+  Feature_THREE Feature = 3
+)
+
+func (p Feature) String() string {
+  switch p {
+  case Feature_ONE: return "ONE"
+  case Feature_TWO: return "TWO"
+  case Feature_THREE: return "THREE"
+  }
+  return "<UNSET>"
+}
+
+func FeatureFromString(s string) (Feature, error) {
+  switch s {
+  case "ONE": return Feature_ONE, nil 
+  case "TWO": return Feature_TWO, nil 
+  case "THREE": return Feature_THREE, nil 
+  }
+  return Feature(0), fmt.Errorf("not a valid Feature string")
+}
+
+
+func FeaturePtr(v Feature) *Feature { return &v }
+
+func (p Feature) MarshalText() ([]byte, error) {
+return []byte(p.String()), nil
+}
+
+func (p *Feature) UnmarshalText(text []byte) error {
+q, err := FeatureFromString(string(text))
+if (err != nil) {
+return err
+}
+*p = q
+return nil
+}
+
+func (p *Feature) Scan(value interface{}) error {
+v, ok := value.(int64)
+if !ok {
+return errors.New("Scan value is not int64")
+}
+*p = Feature(v)
+return nil
+}
+
+func (p * Feature) Value() (driver.Value, error) {
+  if p == nil {
+    return nil, nil
+  }
+return int64(*p), nil
+}
 // Attributes:
 //  - Inner
 type Nested struct {
@@ -365,6 +422,9 @@ type TestService interface {
   // Parameters:
   //  - Strs
   StringsCall(ctx context.Context, strs []*Message) (_r []*Message, _err error)
+  // Parameters:
+  //  - Feature
+  EnumCall(ctx context.Context, feature Feature) (_r []Feature, _err error)
 }
 
 type TestServiceClient struct {
@@ -495,6 +555,21 @@ func (p *TestServiceClient) StringsCall(ctx context.Context, strs []*Message) (_
   return _result21.GetSuccess(), nil
 }
 
+// Parameters:
+//  - Feature
+func (p *TestServiceClient) EnumCall(ctx context.Context, feature Feature) (_r []Feature, _err error) {
+  var _args22 TestServiceEnumCallArgs
+  _args22.Feature = feature
+  var _result24 TestServiceEnumCallResult
+  var _meta23 thrift.ResponseMeta
+  _meta23, _err = p.Client_().Call(ctx, "enumCall", &_args22, &_result24)
+  p.SetLastResponseMeta_(_meta23)
+  if _err != nil {
+    return
+  }
+  return _result24.GetSuccess(), nil
+}
+
 type TestServiceProcessor struct {
   processorMap map[string]thrift.TProcessorFunction
   handler TestService
@@ -515,14 +590,15 @@ func (p *TestServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFuncti
 
 func NewTestServiceProcessor(handler TestService) *TestServiceProcessor {
 
-  self22 := &TestServiceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self22.processorMap["simpleCall"] = &testServiceProcessorSimpleCall{handler:handler}
-  self22.processorMap["boolCall"] = &testServiceProcessorBoolCall{handler:handler}
-  self22.processorMap["messageCall"] = &testServiceProcessorMessageCall{handler:handler}
-  self22.processorMap["mapCall"] = &testServiceProcessorMapCall{handler:handler}
-  self22.processorMap["stringCall"] = &testServiceProcessorStringCall{handler:handler}
-  self22.processorMap["stringsCall"] = &testServiceProcessorStringsCall{handler:handler}
-return self22
+  self25 := &TestServiceProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self25.processorMap["simpleCall"] = &testServiceProcessorSimpleCall{handler:handler}
+  self25.processorMap["boolCall"] = &testServiceProcessorBoolCall{handler:handler}
+  self25.processorMap["messageCall"] = &testServiceProcessorMessageCall{handler:handler}
+  self25.processorMap["mapCall"] = &testServiceProcessorMapCall{handler:handler}
+  self25.processorMap["stringCall"] = &testServiceProcessorStringCall{handler:handler}
+  self25.processorMap["stringsCall"] = &testServiceProcessorStringsCall{handler:handler}
+  self25.processorMap["enumCall"] = &testServiceProcessorEnumCall{handler:handler}
+return self25
 }
 
 func (p *TestServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -533,12 +609,12 @@ func (p *TestServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.
   }
   iprot.Skip(ctx, thrift.STRUCT)
   iprot.ReadMessageEnd(ctx)
-  x23 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x26 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(ctx, name, thrift.EXCEPTION, seqId)
-  x23.Write(ctx, oprot)
+  x26.Write(ctx, oprot)
   oprot.WriteMessageEnd(ctx)
   oprot.Flush(ctx)
-  return false, x23
+  return false, x26
 
 }
 
@@ -547,7 +623,7 @@ type testServiceProcessorSimpleCall struct {
 }
 
 func (p *testServiceProcessorSimpleCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  var _write_err24 error
+  var _write_err27 error
   args := TestServiceSimpleCallArgs{}
   if err2 := args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -593,21 +669,21 @@ func (p *testServiceProcessorSimpleCall) Process(ctx context.Context, seqId int3
     if errors.Is(err2, thrift.ErrAbandonRequest) {
       return false, thrift.WrapTException(err2)
     }
-    _exc25 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing simpleCall: " + err2.Error())
+    _exc28 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing simpleCall: " + err2.Error())
     if err2 := oprot.WriteMessageBegin(ctx, "simpleCall", thrift.EXCEPTION, seqId); err2 != nil {
-      _write_err24 = thrift.WrapTException(err2)
+      _write_err27 = thrift.WrapTException(err2)
     }
-    if err2 := _exc25.Write(ctx, oprot); _write_err24 == nil && err2 != nil {
-      _write_err24 = thrift.WrapTException(err2)
+    if err2 := _exc28.Write(ctx, oprot); _write_err27 == nil && err2 != nil {
+      _write_err27 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.WriteMessageEnd(ctx); _write_err24 == nil && err2 != nil {
-      _write_err24 = thrift.WrapTException(err2)
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err27 == nil && err2 != nil {
+      _write_err27 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.Flush(ctx); _write_err24 == nil && err2 != nil {
-      _write_err24 = thrift.WrapTException(err2)
+    if err2 := oprot.Flush(ctx); _write_err27 == nil && err2 != nil {
+      _write_err27 = thrift.WrapTException(err2)
     }
-    if _write_err24 != nil {
-      return false, thrift.WrapTException(_write_err24)
+    if _write_err27 != nil {
+      return false, thrift.WrapTException(_write_err27)
     }
     return true, err
   } else {
@@ -615,19 +691,19 @@ func (p *testServiceProcessorSimpleCall) Process(ctx context.Context, seqId int3
   }
   tickerCancel()
   if err2 := oprot.WriteMessageBegin(ctx, "simpleCall", thrift.REPLY, seqId); err2 != nil {
-    _write_err24 = thrift.WrapTException(err2)
+    _write_err27 = thrift.WrapTException(err2)
   }
-  if err2 := result.Write(ctx, oprot); _write_err24 == nil && err2 != nil {
-    _write_err24 = thrift.WrapTException(err2)
+  if err2 := result.Write(ctx, oprot); _write_err27 == nil && err2 != nil {
+    _write_err27 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.WriteMessageEnd(ctx); _write_err24 == nil && err2 != nil {
-    _write_err24 = thrift.WrapTException(err2)
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err27 == nil && err2 != nil {
+    _write_err27 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.Flush(ctx); _write_err24 == nil && err2 != nil {
-    _write_err24 = thrift.WrapTException(err2)
+  if err2 := oprot.Flush(ctx); _write_err27 == nil && err2 != nil {
+    _write_err27 = thrift.WrapTException(err2)
   }
-  if _write_err24 != nil {
-    return false, thrift.WrapTException(_write_err24)
+  if _write_err27 != nil {
+    return false, thrift.WrapTException(_write_err27)
   }
   return true, err
 }
@@ -637,7 +713,7 @@ type testServiceProcessorBoolCall struct {
 }
 
 func (p *testServiceProcessorBoolCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  var _write_err26 error
+  var _write_err29 error
   args := TestServiceBoolCallArgs{}
   if err2 := args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -683,21 +759,21 @@ func (p *testServiceProcessorBoolCall) Process(ctx context.Context, seqId int32,
     if errors.Is(err2, thrift.ErrAbandonRequest) {
       return false, thrift.WrapTException(err2)
     }
-    _exc27 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing boolCall: " + err2.Error())
+    _exc30 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing boolCall: " + err2.Error())
     if err2 := oprot.WriteMessageBegin(ctx, "boolCall", thrift.EXCEPTION, seqId); err2 != nil {
-      _write_err26 = thrift.WrapTException(err2)
+      _write_err29 = thrift.WrapTException(err2)
     }
-    if err2 := _exc27.Write(ctx, oprot); _write_err26 == nil && err2 != nil {
-      _write_err26 = thrift.WrapTException(err2)
+    if err2 := _exc30.Write(ctx, oprot); _write_err29 == nil && err2 != nil {
+      _write_err29 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.WriteMessageEnd(ctx); _write_err26 == nil && err2 != nil {
-      _write_err26 = thrift.WrapTException(err2)
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err29 == nil && err2 != nil {
+      _write_err29 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.Flush(ctx); _write_err26 == nil && err2 != nil {
-      _write_err26 = thrift.WrapTException(err2)
+    if err2 := oprot.Flush(ctx); _write_err29 == nil && err2 != nil {
+      _write_err29 = thrift.WrapTException(err2)
     }
-    if _write_err26 != nil {
-      return false, thrift.WrapTException(_write_err26)
+    if _write_err29 != nil {
+      return false, thrift.WrapTException(_write_err29)
     }
     return true, err
   } else {
@@ -705,19 +781,19 @@ func (p *testServiceProcessorBoolCall) Process(ctx context.Context, seqId int32,
   }
   tickerCancel()
   if err2 := oprot.WriteMessageBegin(ctx, "boolCall", thrift.REPLY, seqId); err2 != nil {
-    _write_err26 = thrift.WrapTException(err2)
+    _write_err29 = thrift.WrapTException(err2)
   }
-  if err2 := result.Write(ctx, oprot); _write_err26 == nil && err2 != nil {
-    _write_err26 = thrift.WrapTException(err2)
+  if err2 := result.Write(ctx, oprot); _write_err29 == nil && err2 != nil {
+    _write_err29 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.WriteMessageEnd(ctx); _write_err26 == nil && err2 != nil {
-    _write_err26 = thrift.WrapTException(err2)
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err29 == nil && err2 != nil {
+    _write_err29 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.Flush(ctx); _write_err26 == nil && err2 != nil {
-    _write_err26 = thrift.WrapTException(err2)
+  if err2 := oprot.Flush(ctx); _write_err29 == nil && err2 != nil {
+    _write_err29 = thrift.WrapTException(err2)
   }
-  if _write_err26 != nil {
-    return false, thrift.WrapTException(_write_err26)
+  if _write_err29 != nil {
+    return false, thrift.WrapTException(_write_err29)
   }
   return true, err
 }
@@ -727,7 +803,7 @@ type testServiceProcessorMessageCall struct {
 }
 
 func (p *testServiceProcessorMessageCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  var _write_err28 error
+  var _write_err31 error
   args := TestServiceMessageCallArgs{}
   if err2 := args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -773,21 +849,21 @@ func (p *testServiceProcessorMessageCall) Process(ctx context.Context, seqId int
     if errors.Is(err2, thrift.ErrAbandonRequest) {
       return false, thrift.WrapTException(err2)
     }
-    _exc29 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing messageCall: " + err2.Error())
+    _exc32 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing messageCall: " + err2.Error())
     if err2 := oprot.WriteMessageBegin(ctx, "messageCall", thrift.EXCEPTION, seqId); err2 != nil {
-      _write_err28 = thrift.WrapTException(err2)
+      _write_err31 = thrift.WrapTException(err2)
     }
-    if err2 := _exc29.Write(ctx, oprot); _write_err28 == nil && err2 != nil {
-      _write_err28 = thrift.WrapTException(err2)
+    if err2 := _exc32.Write(ctx, oprot); _write_err31 == nil && err2 != nil {
+      _write_err31 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.WriteMessageEnd(ctx); _write_err28 == nil && err2 != nil {
-      _write_err28 = thrift.WrapTException(err2)
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err31 == nil && err2 != nil {
+      _write_err31 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.Flush(ctx); _write_err28 == nil && err2 != nil {
-      _write_err28 = thrift.WrapTException(err2)
+    if err2 := oprot.Flush(ctx); _write_err31 == nil && err2 != nil {
+      _write_err31 = thrift.WrapTException(err2)
     }
-    if _write_err28 != nil {
-      return false, thrift.WrapTException(_write_err28)
+    if _write_err31 != nil {
+      return false, thrift.WrapTException(_write_err31)
     }
     return true, err
   } else {
@@ -795,19 +871,19 @@ func (p *testServiceProcessorMessageCall) Process(ctx context.Context, seqId int
   }
   tickerCancel()
   if err2 := oprot.WriteMessageBegin(ctx, "messageCall", thrift.REPLY, seqId); err2 != nil {
-    _write_err28 = thrift.WrapTException(err2)
+    _write_err31 = thrift.WrapTException(err2)
   }
-  if err2 := result.Write(ctx, oprot); _write_err28 == nil && err2 != nil {
-    _write_err28 = thrift.WrapTException(err2)
+  if err2 := result.Write(ctx, oprot); _write_err31 == nil && err2 != nil {
+    _write_err31 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.WriteMessageEnd(ctx); _write_err28 == nil && err2 != nil {
-    _write_err28 = thrift.WrapTException(err2)
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err31 == nil && err2 != nil {
+    _write_err31 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.Flush(ctx); _write_err28 == nil && err2 != nil {
-    _write_err28 = thrift.WrapTException(err2)
+  if err2 := oprot.Flush(ctx); _write_err31 == nil && err2 != nil {
+    _write_err31 = thrift.WrapTException(err2)
   }
-  if _write_err28 != nil {
-    return false, thrift.WrapTException(_write_err28)
+  if _write_err31 != nil {
+    return false, thrift.WrapTException(_write_err31)
   }
   return true, err
 }
@@ -817,7 +893,7 @@ type testServiceProcessorMapCall struct {
 }
 
 func (p *testServiceProcessorMapCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  var _write_err30 error
+  var _write_err33 error
   args := TestServiceMapCallArgs{}
   if err2 := args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -863,21 +939,21 @@ func (p *testServiceProcessorMapCall) Process(ctx context.Context, seqId int32, 
     if errors.Is(err2, thrift.ErrAbandonRequest) {
       return false, thrift.WrapTException(err2)
     }
-    _exc31 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing mapCall: " + err2.Error())
+    _exc34 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing mapCall: " + err2.Error())
     if err2 := oprot.WriteMessageBegin(ctx, "mapCall", thrift.EXCEPTION, seqId); err2 != nil {
-      _write_err30 = thrift.WrapTException(err2)
+      _write_err33 = thrift.WrapTException(err2)
     }
-    if err2 := _exc31.Write(ctx, oprot); _write_err30 == nil && err2 != nil {
-      _write_err30 = thrift.WrapTException(err2)
+    if err2 := _exc34.Write(ctx, oprot); _write_err33 == nil && err2 != nil {
+      _write_err33 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.WriteMessageEnd(ctx); _write_err30 == nil && err2 != nil {
-      _write_err30 = thrift.WrapTException(err2)
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err33 == nil && err2 != nil {
+      _write_err33 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.Flush(ctx); _write_err30 == nil && err2 != nil {
-      _write_err30 = thrift.WrapTException(err2)
+    if err2 := oprot.Flush(ctx); _write_err33 == nil && err2 != nil {
+      _write_err33 = thrift.WrapTException(err2)
     }
-    if _write_err30 != nil {
-      return false, thrift.WrapTException(_write_err30)
+    if _write_err33 != nil {
+      return false, thrift.WrapTException(_write_err33)
     }
     return true, err
   } else {
@@ -885,19 +961,19 @@ func (p *testServiceProcessorMapCall) Process(ctx context.Context, seqId int32, 
   }
   tickerCancel()
   if err2 := oprot.WriteMessageBegin(ctx, "mapCall", thrift.REPLY, seqId); err2 != nil {
-    _write_err30 = thrift.WrapTException(err2)
+    _write_err33 = thrift.WrapTException(err2)
   }
-  if err2 := result.Write(ctx, oprot); _write_err30 == nil && err2 != nil {
-    _write_err30 = thrift.WrapTException(err2)
+  if err2 := result.Write(ctx, oprot); _write_err33 == nil && err2 != nil {
+    _write_err33 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.WriteMessageEnd(ctx); _write_err30 == nil && err2 != nil {
-    _write_err30 = thrift.WrapTException(err2)
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err33 == nil && err2 != nil {
+    _write_err33 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.Flush(ctx); _write_err30 == nil && err2 != nil {
-    _write_err30 = thrift.WrapTException(err2)
+  if err2 := oprot.Flush(ctx); _write_err33 == nil && err2 != nil {
+    _write_err33 = thrift.WrapTException(err2)
   }
-  if _write_err30 != nil {
-    return false, thrift.WrapTException(_write_err30)
+  if _write_err33 != nil {
+    return false, thrift.WrapTException(_write_err33)
   }
   return true, err
 }
@@ -907,7 +983,7 @@ type testServiceProcessorStringCall struct {
 }
 
 func (p *testServiceProcessorStringCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  var _write_err32 error
+  var _write_err35 error
   args := TestServiceStringCallArgs{}
   if err2 := args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -953,21 +1029,21 @@ func (p *testServiceProcessorStringCall) Process(ctx context.Context, seqId int3
     if errors.Is(err2, thrift.ErrAbandonRequest) {
       return false, thrift.WrapTException(err2)
     }
-    _exc33 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing stringCall: " + err2.Error())
+    _exc36 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing stringCall: " + err2.Error())
     if err2 := oprot.WriteMessageBegin(ctx, "stringCall", thrift.EXCEPTION, seqId); err2 != nil {
-      _write_err32 = thrift.WrapTException(err2)
+      _write_err35 = thrift.WrapTException(err2)
     }
-    if err2 := _exc33.Write(ctx, oprot); _write_err32 == nil && err2 != nil {
-      _write_err32 = thrift.WrapTException(err2)
+    if err2 := _exc36.Write(ctx, oprot); _write_err35 == nil && err2 != nil {
+      _write_err35 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.WriteMessageEnd(ctx); _write_err32 == nil && err2 != nil {
-      _write_err32 = thrift.WrapTException(err2)
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err35 == nil && err2 != nil {
+      _write_err35 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.Flush(ctx); _write_err32 == nil && err2 != nil {
-      _write_err32 = thrift.WrapTException(err2)
+    if err2 := oprot.Flush(ctx); _write_err35 == nil && err2 != nil {
+      _write_err35 = thrift.WrapTException(err2)
     }
-    if _write_err32 != nil {
-      return false, thrift.WrapTException(_write_err32)
+    if _write_err35 != nil {
+      return false, thrift.WrapTException(_write_err35)
     }
     return true, err
   } else {
@@ -975,19 +1051,19 @@ func (p *testServiceProcessorStringCall) Process(ctx context.Context, seqId int3
   }
   tickerCancel()
   if err2 := oprot.WriteMessageBegin(ctx, "stringCall", thrift.REPLY, seqId); err2 != nil {
-    _write_err32 = thrift.WrapTException(err2)
+    _write_err35 = thrift.WrapTException(err2)
   }
-  if err2 := result.Write(ctx, oprot); _write_err32 == nil && err2 != nil {
-    _write_err32 = thrift.WrapTException(err2)
+  if err2 := result.Write(ctx, oprot); _write_err35 == nil && err2 != nil {
+    _write_err35 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.WriteMessageEnd(ctx); _write_err32 == nil && err2 != nil {
-    _write_err32 = thrift.WrapTException(err2)
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err35 == nil && err2 != nil {
+    _write_err35 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.Flush(ctx); _write_err32 == nil && err2 != nil {
-    _write_err32 = thrift.WrapTException(err2)
+  if err2 := oprot.Flush(ctx); _write_err35 == nil && err2 != nil {
+    _write_err35 = thrift.WrapTException(err2)
   }
-  if _write_err32 != nil {
-    return false, thrift.WrapTException(_write_err32)
+  if _write_err35 != nil {
+    return false, thrift.WrapTException(_write_err35)
   }
   return true, err
 }
@@ -997,7 +1073,7 @@ type testServiceProcessorStringsCall struct {
 }
 
 func (p *testServiceProcessorStringsCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  var _write_err34 error
+  var _write_err37 error
   args := TestServiceStringsCallArgs{}
   if err2 := args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -1043,21 +1119,21 @@ func (p *testServiceProcessorStringsCall) Process(ctx context.Context, seqId int
     if errors.Is(err2, thrift.ErrAbandonRequest) {
       return false, thrift.WrapTException(err2)
     }
-    _exc35 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing stringsCall: " + err2.Error())
+    _exc38 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing stringsCall: " + err2.Error())
     if err2 := oprot.WriteMessageBegin(ctx, "stringsCall", thrift.EXCEPTION, seqId); err2 != nil {
-      _write_err34 = thrift.WrapTException(err2)
+      _write_err37 = thrift.WrapTException(err2)
     }
-    if err2 := _exc35.Write(ctx, oprot); _write_err34 == nil && err2 != nil {
-      _write_err34 = thrift.WrapTException(err2)
+    if err2 := _exc38.Write(ctx, oprot); _write_err37 == nil && err2 != nil {
+      _write_err37 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.WriteMessageEnd(ctx); _write_err34 == nil && err2 != nil {
-      _write_err34 = thrift.WrapTException(err2)
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err37 == nil && err2 != nil {
+      _write_err37 = thrift.WrapTException(err2)
     }
-    if err2 := oprot.Flush(ctx); _write_err34 == nil && err2 != nil {
-      _write_err34 = thrift.WrapTException(err2)
+    if err2 := oprot.Flush(ctx); _write_err37 == nil && err2 != nil {
+      _write_err37 = thrift.WrapTException(err2)
     }
-    if _write_err34 != nil {
-      return false, thrift.WrapTException(_write_err34)
+    if _write_err37 != nil {
+      return false, thrift.WrapTException(_write_err37)
     }
     return true, err
   } else {
@@ -1065,19 +1141,109 @@ func (p *testServiceProcessorStringsCall) Process(ctx context.Context, seqId int
   }
   tickerCancel()
   if err2 := oprot.WriteMessageBegin(ctx, "stringsCall", thrift.REPLY, seqId); err2 != nil {
-    _write_err34 = thrift.WrapTException(err2)
+    _write_err37 = thrift.WrapTException(err2)
   }
-  if err2 := result.Write(ctx, oprot); _write_err34 == nil && err2 != nil {
-    _write_err34 = thrift.WrapTException(err2)
+  if err2 := result.Write(ctx, oprot); _write_err37 == nil && err2 != nil {
+    _write_err37 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.WriteMessageEnd(ctx); _write_err34 == nil && err2 != nil {
-    _write_err34 = thrift.WrapTException(err2)
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err37 == nil && err2 != nil {
+    _write_err37 = thrift.WrapTException(err2)
   }
-  if err2 := oprot.Flush(ctx); _write_err34 == nil && err2 != nil {
-    _write_err34 = thrift.WrapTException(err2)
+  if err2 := oprot.Flush(ctx); _write_err37 == nil && err2 != nil {
+    _write_err37 = thrift.WrapTException(err2)
   }
-  if _write_err34 != nil {
-    return false, thrift.WrapTException(_write_err34)
+  if _write_err37 != nil {
+    return false, thrift.WrapTException(_write_err37)
+  }
+  return true, err
+}
+
+type testServiceProcessorEnumCall struct {
+  handler TestService
+}
+
+func (p *testServiceProcessorEnumCall) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  var _write_err39 error
+  args := TestServiceEnumCallArgs{}
+  if err2 := args.Read(ctx, iprot); err2 != nil {
+    iprot.ReadMessageEnd(ctx)
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
+    oprot.WriteMessageBegin(ctx, "enumCall", thrift.EXCEPTION, seqId)
+    x.Write(ctx, oprot)
+    oprot.WriteMessageEnd(ctx)
+    oprot.Flush(ctx)
+    return false, thrift.WrapTException(err2)
+  }
+  iprot.ReadMessageEnd(ctx)
+
+  tickerCancel := func() {}
+  // Start a goroutine to do server side connectivity check.
+  if thrift.ServerConnectivityCheckInterval > 0 {
+    var cancel context.CancelFunc
+    ctx, cancel = context.WithCancel(ctx)
+    defer cancel()
+    var tickerCtx context.Context
+    tickerCtx, tickerCancel = context.WithCancel(context.Background())
+    defer tickerCancel()
+    go func(ctx context.Context, cancel context.CancelFunc) {
+      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
+      defer ticker.Stop()
+      for {
+        select {
+        case <-ctx.Done():
+          return
+        case <-ticker.C:
+          if !iprot.Transport().IsOpen() {
+            cancel()
+            return
+          }
+        }
+      }
+    }(tickerCtx, cancel)
+  }
+
+  result := TestServiceEnumCallResult{}
+  if retval, err2 := p.handler.EnumCall(ctx, args.Feature); err2 != nil {
+    tickerCancel()
+    err = thrift.WrapTException(err2)
+    if errors.Is(err2, thrift.ErrAbandonRequest) {
+      return false, thrift.WrapTException(err2)
+    }
+    _exc40 := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing enumCall: " + err2.Error())
+    if err2 := oprot.WriteMessageBegin(ctx, "enumCall", thrift.EXCEPTION, seqId); err2 != nil {
+      _write_err39 = thrift.WrapTException(err2)
+    }
+    if err2 := _exc40.Write(ctx, oprot); _write_err39 == nil && err2 != nil {
+      _write_err39 = thrift.WrapTException(err2)
+    }
+    if err2 := oprot.WriteMessageEnd(ctx); _write_err39 == nil && err2 != nil {
+      _write_err39 = thrift.WrapTException(err2)
+    }
+    if err2 := oprot.Flush(ctx); _write_err39 == nil && err2 != nil {
+      _write_err39 = thrift.WrapTException(err2)
+    }
+    if _write_err39 != nil {
+      return false, thrift.WrapTException(_write_err39)
+    }
+    return true, err
+  } else {
+    result.Success = retval
+  }
+  tickerCancel()
+  if err2 := oprot.WriteMessageBegin(ctx, "enumCall", thrift.REPLY, seqId); err2 != nil {
+    _write_err39 = thrift.WrapTException(err2)
+  }
+  if err2 := result.Write(ctx, oprot); _write_err39 == nil && err2 != nil {
+    _write_err39 = thrift.WrapTException(err2)
+  }
+  if err2 := oprot.WriteMessageEnd(ctx); _write_err39 == nil && err2 != nil {
+    _write_err39 = thrift.WrapTException(err2)
+  }
+  if err2 := oprot.Flush(ctx); _write_err39 == nil && err2 != nil {
+    _write_err39 = thrift.WrapTException(err2)
+  }
+  if _write_err39 != nil {
+    return false, thrift.WrapTException(_write_err39)
   }
   return true, err
 }
@@ -1725,19 +1891,19 @@ func (p *TestServiceMapCallArgs)  ReadField1(ctx context.Context, iprot thrift.T
   tMap := make(map[string]bool, size)
   p.Maps =  tMap
   for i := 0; i < size; i ++ {
-var _key36 string
+var _key41 string
     if v, err := iprot.ReadString(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _key36 = v
+    _key41 = v
 }
-var _val37 bool
+var _val42 bool
     if v, err := iprot.ReadBool(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _val37 = v
+    _val42 = v
 }
-    p.Maps[_key36] = _val37
+    p.Maps[_key41] = _val42
   }
   if err := iprot.ReadMapEnd(ctx); err != nil {
     return thrift.PrependError("error reading map end: ", err)
@@ -1850,19 +2016,19 @@ func (p *TestServiceMapCallResult)  ReadField0(ctx context.Context, iprot thrift
   tMap := make(map[string]bool, size)
   p.Success =  tMap
   for i := 0; i < size; i ++ {
-var _key38 string
+var _key43 string
     if v, err := iprot.ReadString(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _key38 = v
+    _key43 = v
 }
-var _val39 bool
+var _val44 bool
     if v, err := iprot.ReadBool(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _val39 = v
+    _val44 = v
 }
-    p.Success[_key38] = _val39
+    p.Success[_key43] = _val44
   }
   if err := iprot.ReadMapEnd(ctx); err != nil {
     return thrift.PrependError("error reading map end: ", err)
@@ -1972,13 +2138,13 @@ func (p *TestServiceStringCallArgs)  ReadField1(ctx context.Context, iprot thrif
   tSlice := make([]string, 0, size)
   p.Strs =  tSlice
   for i := 0; i < size; i ++ {
-var _elem40 string
+var _elem45 string
     if v, err := iprot.ReadString(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem40 = v
+    _elem45 = v
 }
-    p.Strs = append(p.Strs, _elem40)
+    p.Strs = append(p.Strs, _elem45)
   }
   if err := iprot.ReadListEnd(ctx); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -2089,13 +2255,13 @@ func (p *TestServiceStringCallResult)  ReadField0(ctx context.Context, iprot thr
   tSlice := make([]string, 0, size)
   p.Success =  tSlice
   for i := 0; i < size; i ++ {
-var _elem41 string
+var _elem46 string
     if v, err := iprot.ReadString(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem41 = v
+    _elem46 = v
 }
-    p.Success = append(p.Success, _elem41)
+    p.Success = append(p.Success, _elem46)
   }
   if err := iprot.ReadListEnd(ctx); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -2203,11 +2369,11 @@ func (p *TestServiceStringsCallArgs)  ReadField1(ctx context.Context, iprot thri
   tSlice := make([]*Message, 0, size)
   p.Strs =  tSlice
   for i := 0; i < size; i ++ {
-    _elem42 := &Message{}
-    if err := _elem42.Read(ctx, iprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem42), err)
+    _elem47 := &Message{}
+    if err := _elem47.Read(ctx, iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem47), err)
     }
-    p.Strs = append(p.Strs, _elem42)
+    p.Strs = append(p.Strs, _elem47)
   }
   if err := iprot.ReadListEnd(ctx); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -2319,11 +2485,11 @@ func (p *TestServiceStringsCallResult)  ReadField0(ctx context.Context, iprot th
   tSlice := make([]*Message, 0, size)
   p.Success =  tSlice
   for i := 0; i < size; i ++ {
-    _elem43 := &Message{}
-    if err := _elem43.Read(ctx, iprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem43), err)
+    _elem48 := &Message{}
+    if err := _elem48.Read(ctx, iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem48), err)
     }
-    p.Success = append(p.Success, _elem43)
+    p.Success = append(p.Success, _elem48)
   }
   if err := iprot.ReadListEnd(ctx); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -2370,6 +2536,218 @@ func (p *TestServiceStringsCallResult) String() string {
     return "<nil>"
   }
   return fmt.Sprintf("TestServiceStringsCallResult(%+v)", *p)
+}
+
+// Attributes:
+//  - Feature
+type TestServiceEnumCallArgs struct {
+  Feature Feature `thrift:"feature,1" db:"feature" json:"feature"`
+}
+
+func NewTestServiceEnumCallArgs() *TestServiceEnumCallArgs {
+  return &TestServiceEnumCallArgs{}
+}
+
+
+func (p *TestServiceEnumCallArgs) GetFeature() Feature {
+  return p.Feature
+}
+func (p *TestServiceEnumCallArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.I32 {
+        if err := p.ReadField1(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(ctx); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *TestServiceEnumCallArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(ctx); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  temp := Feature(v)
+  p.Feature = temp
+}
+  return nil
+}
+
+func (p *TestServiceEnumCallArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "enumCall_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(ctx, oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(ctx); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(ctx); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *TestServiceEnumCallArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "feature", thrift.I32, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:feature: ", p), err) }
+  if err := oprot.WriteI32(ctx, int32(p.Feature)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.feature (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:feature: ", p), err) }
+  return err
+}
+
+func (p *TestServiceEnumCallArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("TestServiceEnumCallArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type TestServiceEnumCallResult struct {
+  Success []Feature `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewTestServiceEnumCallResult() *TestServiceEnumCallResult {
+  return &TestServiceEnumCallResult{}
+}
+
+var TestServiceEnumCallResult_Success_DEFAULT []Feature
+
+func (p *TestServiceEnumCallResult) GetSuccess() []Feature {
+  return p.Success
+}
+func (p *TestServiceEnumCallResult) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *TestServiceEnumCallResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if fieldTypeId == thrift.LIST {
+        if err := p.ReadField0(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(ctx); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *TestServiceEnumCallResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin(ctx)
+  if err != nil {
+    return thrift.PrependError("error reading list begin: ", err)
+  }
+  tSlice := make([]Feature, 0, size)
+  p.Success =  tSlice
+  for i := 0; i < size; i ++ {
+var _elem49 Feature
+    if v, err := iprot.ReadI32(ctx); err != nil {
+    return thrift.PrependError("error reading field 0: ", err)
+} else {
+    temp := Feature(v)
+    _elem49 = temp
+}
+    p.Success = append(p.Success, _elem49)
+  }
+  if err := iprot.ReadListEnd(ctx); err != nil {
+    return thrift.PrependError("error reading list end: ", err)
+  }
+  return nil
+}
+
+func (p *TestServiceEnumCallResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "enumCall_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(ctx, oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(ctx); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(ctx); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *TestServiceEnumCallResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin(ctx, "success", thrift.LIST, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := oprot.WriteListBegin(ctx, thrift.I32, len(p.Success)); err != nil {
+      return thrift.PrependError("error writing list begin: ", err)
+    }
+    for _, v := range p.Success {
+      if err := oprot.WriteI32(ctx, int32(v)); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err) }
+    }
+    if err := oprot.WriteListEnd(ctx); err != nil {
+      return thrift.PrependError("error writing list end: ", err)
+    }
+    if err := oprot.WriteFieldEnd(ctx); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *TestServiceEnumCallResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("TestServiceEnumCallResult(%+v)", *p)
 }
 
 
