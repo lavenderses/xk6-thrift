@@ -10,6 +10,12 @@ struct Message {
     3: Nested nested,
 }
 
+enum Feature {
+    ONE = 1;
+    TWO = 2;
+    THREE = 3;
+}
+
 service TestService {
     string simpleCall(1: string id);
 
@@ -22,4 +28,6 @@ service TestService {
     list<string> stringCall(1: list<string> strs);
 
     list<Message> stringsCall(1: list<Message> strs);
+
+    list<Feature> enumCall(1: Feature feature);
 }

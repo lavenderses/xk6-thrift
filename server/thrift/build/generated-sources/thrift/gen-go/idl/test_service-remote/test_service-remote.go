@@ -28,6 +28,7 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "   mapCall( maps)")
   fmt.Fprintln(os.Stderr, "   stringCall( strs)")
   fmt.Fprintln(os.Stderr, "   stringsCall( strs)")
+  fmt.Fprintln(os.Stderr, "   enumCall(Feature feature)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -175,19 +176,19 @@ func main() {
       fmt.Fprintln(os.Stderr, "MessageCall requires 1 args")
       flag.Usage()
     }
-    arg46 := flag.Arg(1)
-    mbTrans47 := thrift.NewTMemoryBufferLen(len(arg46))
-    defer mbTrans47.Close()
-    _, err48 := mbTrans47.WriteString(arg46)
-    if err48 != nil {
+    arg52 := flag.Arg(1)
+    mbTrans53 := thrift.NewTMemoryBufferLen(len(arg52))
+    defer mbTrans53.Close()
+    _, err54 := mbTrans53.WriteString(arg52)
+    if err54 != nil {
       Usage()
       return
     }
-    factory49 := thrift.NewTJSONProtocolFactory()
-    jsProt50 := factory49.GetProtocol(mbTrans47)
+    factory55 := thrift.NewTJSONProtocolFactory()
+    jsProt56 := factory55.GetProtocol(mbTrans53)
     argvalue0 := idl.NewMessage()
-    err51 := argvalue0.Read(context.Background(), jsProt50)
-    if err51 != nil {
+    err57 := argvalue0.Read(context.Background(), jsProt56)
+    if err57 != nil {
       Usage()
       return
     }
@@ -200,19 +201,19 @@ func main() {
       fmt.Fprintln(os.Stderr, "MapCall requires 1 args")
       flag.Usage()
     }
-    arg52 := flag.Arg(1)
-    mbTrans53 := thrift.NewTMemoryBufferLen(len(arg52))
-    defer mbTrans53.Close()
-    _, err54 := mbTrans53.WriteString(arg52)
-    if err54 != nil { 
+    arg58 := flag.Arg(1)
+    mbTrans59 := thrift.NewTMemoryBufferLen(len(arg58))
+    defer mbTrans59.Close()
+    _, err60 := mbTrans59.WriteString(arg58)
+    if err60 != nil { 
       Usage()
       return
     }
-    factory55 := thrift.NewTJSONProtocolFactory()
-    jsProt56 := factory55.GetProtocol(mbTrans53)
+    factory61 := thrift.NewTJSONProtocolFactory()
+    jsProt62 := factory61.GetProtocol(mbTrans59)
     containerStruct0 := idl.NewTestServiceMapCallArgs()
-    err57 := containerStruct0.ReadField1(context.Background(), jsProt56)
-    if err57 != nil {
+    err63 := containerStruct0.ReadField1(context.Background(), jsProt62)
+    if err63 != nil {
       Usage()
       return
     }
@@ -226,19 +227,19 @@ func main() {
       fmt.Fprintln(os.Stderr, "StringCall requires 1 args")
       flag.Usage()
     }
-    arg58 := flag.Arg(1)
-    mbTrans59 := thrift.NewTMemoryBufferLen(len(arg58))
-    defer mbTrans59.Close()
-    _, err60 := mbTrans59.WriteString(arg58)
-    if err60 != nil { 
+    arg64 := flag.Arg(1)
+    mbTrans65 := thrift.NewTMemoryBufferLen(len(arg64))
+    defer mbTrans65.Close()
+    _, err66 := mbTrans65.WriteString(arg64)
+    if err66 != nil { 
       Usage()
       return
     }
-    factory61 := thrift.NewTJSONProtocolFactory()
-    jsProt62 := factory61.GetProtocol(mbTrans59)
+    factory67 := thrift.NewTJSONProtocolFactory()
+    jsProt68 := factory67.GetProtocol(mbTrans65)
     containerStruct0 := idl.NewTestServiceStringCallArgs()
-    err63 := containerStruct0.ReadField1(context.Background(), jsProt62)
-    if err63 != nil {
+    err69 := containerStruct0.ReadField1(context.Background(), jsProt68)
+    if err69 != nil {
       Usage()
       return
     }
@@ -252,25 +253,40 @@ func main() {
       fmt.Fprintln(os.Stderr, "StringsCall requires 1 args")
       flag.Usage()
     }
-    arg64 := flag.Arg(1)
-    mbTrans65 := thrift.NewTMemoryBufferLen(len(arg64))
-    defer mbTrans65.Close()
-    _, err66 := mbTrans65.WriteString(arg64)
-    if err66 != nil { 
+    arg70 := flag.Arg(1)
+    mbTrans71 := thrift.NewTMemoryBufferLen(len(arg70))
+    defer mbTrans71.Close()
+    _, err72 := mbTrans71.WriteString(arg70)
+    if err72 != nil { 
       Usage()
       return
     }
-    factory67 := thrift.NewTJSONProtocolFactory()
-    jsProt68 := factory67.GetProtocol(mbTrans65)
+    factory73 := thrift.NewTJSONProtocolFactory()
+    jsProt74 := factory73.GetProtocol(mbTrans71)
     containerStruct0 := idl.NewTestServiceStringsCallArgs()
-    err69 := containerStruct0.ReadField1(context.Background(), jsProt68)
-    if err69 != nil {
+    err75 := containerStruct0.ReadField1(context.Background(), jsProt74)
+    if err75 != nil {
       Usage()
       return
     }
     argvalue0 := containerStruct0.Strs
     value0 := argvalue0
     fmt.Print(client.StringsCall(context.Background(), value0))
+    fmt.Print("\n")
+    break
+  case "enumCall":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "EnumCall requires 1 args")
+      flag.Usage()
+    }
+    tmp0, err := (strconv.Atoi(flag.Arg(1)))
+    if err != nil {
+      Usage()
+     return
+    }
+    argvalue0 := idl.Feature(tmp0)
+    value0 := argvalue0
+    fmt.Print(client.EnumCall(context.Background(), value0))
     fmt.Print("\n")
     break
   case "":

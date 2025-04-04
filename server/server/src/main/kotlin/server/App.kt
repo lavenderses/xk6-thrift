@@ -6,6 +6,7 @@ import com.linecorp.armeria.server.Server
 import com.linecorp.armeria.server.docs.DocService
 import com.linecorp.armeria.server.logging.AccessLogWriter
 import com.linecorp.armeria.server.thrift.THttpService
+import idl.Feature
 import idl.Message
 import idl.TestService
 import org.apache.thrift.async.AsyncMethodCallback
@@ -96,6 +97,13 @@ class Service: TestService.AsyncIface {
     override fun stringsCall(strs: MutableList<Message>, resultHandler: AsyncMethodCallback<MutableList<Message>>) {
         log.info("Accept: $strs")
         val response = strs.map { Message("content: ${it.content}", it.tags, it.nested) }
+        log.info("Respond: $response")
+        resultHandler.onComplete(response.toMutableList())
+    }
+
+    override fun enumCall(feature: Feature, resultHandler: AsyncMethodCallback<MutableList<Feature>>) {
+        log.info("Accept: $feature")
+        val response = listOf(Feature.ONE, Feature.TWO, Feature.THREE)
         log.info("Respond: $response")
         resultHandler.onComplete(response.toMutableList())
     }
