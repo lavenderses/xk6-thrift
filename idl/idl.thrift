@@ -29,5 +29,5 @@ service TestService {
 
     list<Message> stringsCall(1: list<Message> strs);
 
-    List<Feature> enumCall(1: Feature feature);
+    list<Feature> enumCall(1: Feature feature);
 }
