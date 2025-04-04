@@ -341,3 +341,35 @@ func TestStringsCall(t *testing.T) {
 
 	assertEquals(t, *actual, *expect)
 }
+
+func TestEnumCall(t *testing.T) {
+	// prepare
+	var client *thrift.TStandardClient
+	var err error
+	if client, err = setupClient(t); err != nil {
+		t.Fatalf("error creating client. %v", err)
+	}
+
+	cxt := context.Background()
+	method := "enumCall"
+	tvalue := map[int16]xk6_thrift.TValue{
+		1: xk6_thrift.NewTEnum(1), // ONE
+	}
+	arg := xk6_thrift.NewTRequestWithValue(&tvalue)
+	expectValue := []xk6_thrift.TValue{
+		xk6_thrift.NewTEnum(1), // ONE
+		xk6_thrift.NewTEnum(2), // TWO
+		xk6_thrift.NewTEnum(3), // THREE
+	}
+	expectTValue := xk6_thrift.NewTList(&expectValue, thrift.I32)
+	expect := xk6_thrift.NewTResponse()
+	expect.Add(0, expectTValue)
+	actual := xk6_thrift.NewTResponse()
+
+	// do & verify
+	if _, err = (*client).Call(cxt, method, arg, actual); err != nil {
+		t.Fatalf("error calling RPC. %v", err)
+	}
+
+	assertEquals(t, *actual, *expect)
+}
