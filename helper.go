@@ -31,7 +31,7 @@ func assertTrue(t *testing.T, title string, result bool) {
 	assert(t, title, result, true)
 }
 
-func assert[T string | bool | int | int16 | thrift.TType](t *testing.T, title string, actual, expected T) {
+func assert[T string | bool | int | int16 | int32 | thrift.TType](t *testing.T, title string, actual, expected T) {
 	if actual != expected {
 		t.Fatalf("[%v] Expected %v but was %v", title, expected, actual)
 	}
