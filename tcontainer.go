@@ -11,6 +11,9 @@ func ReadContainerData(ttype thrift.TType, cxt context.Context, iprot thrift.TPr
 	var err error
 
 	switch ttype {
+	// FIXME: i32 duplication for enum / int32. change the way to determine
+	case thrift.I32:
+		tv, err = ReadEnum(cxt, iprot)
 	case thrift.STRING:
 		tv, err = ReadString(cxt, iprot)
 	case thrift.BOOL:
