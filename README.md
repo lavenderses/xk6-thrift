@@ -147,7 +147,7 @@ Similar to `string`.
 
 You can use ttypes boolean *by `ttypes.newTBool(boolean)` function.
 
-#### boolean
+#### enum
 
 Thrift `enum` is mapped to `number` in JavaScript, which is equal to the ID of the field.
 
