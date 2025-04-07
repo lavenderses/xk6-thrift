@@ -112,6 +112,7 @@ These are currently supported.
 - Thrift types
   - string (Use `ttypes.newTString()`)
   - boolean (Use `ttypes.newTBool()`)
+  - enum (Use `ttypes.newTEnum()`)
   - map (Use `ttypes.newTMap()`)
   - list (Use `ttypes.newTList()`)
   - struct (Use `ttypes.newTStruct()`)
@@ -145,6 +146,12 @@ Thrift `boolean` is mapped to `boolean` in JavaScript.
 Similar to `string`.
 
 You can use ttypes boolean *by `ttypes.newTBool(boolean)` function.
+
+#### enum
+
+Thrift `enum` is mapped to `number` in JavaScript, which is equal to the ID of the field.
+
+You can use ttypes enum *by `ttypes.newTEnum(boolean)` function.
 
 #### map
 
